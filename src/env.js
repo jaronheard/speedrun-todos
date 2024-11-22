@@ -34,8 +34,8 @@ export const env = createEnv({
    */
   runtimeEnv: {
     AUTH_SECRET: process.env.AUTH_SECRET,
-    TODOIST_CLIENT_ID: process.env.AUTH_DISCORD_ID,
-    TODOIST_CLIENT_SECRET: process.env.AUTH_DISCORD_SECRET,
+    TODOIST_CLIENT_ID: process.env.TODOIST_CLIENT_ID,
+    TODOIST_CLIENT_SECRET: process.env.TODOIST_CLIENT_SECRET,
     DATABASE_URL: process.env.DATABASE_URL,
     NODE_ENV: process.env.NODE_ENV,
   },
