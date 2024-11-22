@@ -5,6 +5,19 @@ import Todoist from "next-auth/providers/todoist";
 import { env } from "~/env";
 import { db } from "~/server/db";
 
+// Add interface for Todoist user profile
+interface TodoistUserProfile {
+  id: number;
+  full_name: string;
+  email: string;
+  avatar_url: string;
+}
+
+// Add interface for Todoist API response
+interface TodoistApiResponse {
+  user: TodoistUserProfile;
+}
+
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
  * object and keep type safety.
@@ -42,22 +55,22 @@ export const authConfig = {
       userinfo: {
         url: "https://api.todoist.com/sync/v9/sync",
         params: { resource_types: '["user"]' },
-        async request(context) {
-          const response = await fetch(
-            context.provider.userinfo?.url as string,
-            {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${context.tokens.access_token}`,
-                "Content-Type": "application/x-www-form-urlencoded",
-              },
-              body: new URLSearchParams({
-                sync_token: "*",
-                resource_types: '["user"]',
-              }),
+        async request(context: {
+          provider: { userinfo: { url: string } };
+          tokens: { access_token: string };
+        }) {
+          const response = await fetch(context.provider.userinfo?.url, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${context.tokens.access_token}`,
+              "Content-Type": "application/x-www-form-urlencoded",
             },
-          );
-          const data = await response.json();
+            body: new URLSearchParams({
+              sync_token: "*",
+              resource_types: '["user"]',
+            }),
+          });
+          const data = (await response.json()) as TodoistApiResponse;
           const profile = data.user;
 
           return {

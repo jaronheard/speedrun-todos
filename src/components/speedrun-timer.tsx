@@ -11,15 +11,20 @@ interface SpeedrunTimerProps {
   tasks: Task[];
 }
 
+interface CompletedTask extends Task {
+  duration: {
+    amount: number;
+    unit: "minute";
+  };
+}
+
 export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
   const router = useRouter();
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [startTime, setStartTime] = useState<number | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
-  const [completedTasks, setCompletedTasks] = useState<
-    Array<Task & { duration: number }>
-  >([]);
+  const [completedTasks, setCompletedTasks] = useState<CompletedTask[]>([]);
 
   const completeTodoistTask = api.todoist.completeTask.useMutation();
 
@@ -43,8 +48,17 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
         event.preventDefault();
         const task = tasks[currentTaskIndex];
         if (task) {
-          const duration = Date.now() - (startTime ?? Date.now());
-          setCompletedTasks([...completedTasks, { ...task, duration }]);
+          const durationMs = Date.now() - (startTime ?? Date.now());
+          setCompletedTasks([
+            ...completedTasks,
+            {
+              ...task,
+              duration: {
+                amount: Math.round(durationMs / 60000),
+                unit: "minute",
+              },
+            },
+          ]);
           setCurrentTaskIndex((prev) => prev + 1);
         }
       }
@@ -71,7 +85,7 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
         completeTodoistTask.mutateAsync({
           key: process.env.NEXT_PUBLIC_TODOIST_KEY!,
           id: task.id,
-          content: `⏱️${formatTime(task.duration)} - ${task.content}`,
+          content: `⏱️${formatTime(task.duration.amount * 60000)} - ${task.content}`,
           labels: ["speedrun", ...(task.labels ?? [])],
         }),
       ),
@@ -88,7 +102,7 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
           <ul className="space-y-2">
             {completedTasks.map((task) => (
               <li key={task.id}>
-                ✅ {task.content} - {formatTime(task.duration)}
+                ✅ {task.content} - {formatTime(task.duration.amount * 60000)}
               </li>
             ))}
           </ul>
@@ -107,7 +121,7 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
         <div className="space-y-2">
           {completedTasks.map((task) => (
             <div key={task.id} className="text-muted-foreground line-through">
-              {task.content} - {formatTime(task.duration)}
+              {task.content} - {formatTime(task.duration.amount * 60000)}
             </div>
           ))}
           <div className="text-xl font-bold">

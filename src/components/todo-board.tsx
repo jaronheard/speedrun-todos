@@ -5,6 +5,8 @@ import {
   DragDropContext,
   Droppable,
   Draggable,
+  type DroppableProvided,
+  type DraggableProvided,
 } from "@hello-pangea/dnd";
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
@@ -13,18 +15,6 @@ import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
 import TodoCard from "./todo-card";
 import { type Task } from "@doist/todoist-api-typescript";
-
-type DroppableProvided = {
-  innerRef: (element: HTMLElement | null) => void;
-  droppableProps: Record<string, unknown>;
-  placeholder?: React.ReactNode;
-};
-
-type DraggableProvided = {
-  innerRef: (element: HTMLElement | null) => void;
-  draggableProps: Record<string, unknown>;
-  dragHandleProps: Record<string, unknown> | null;
-};
 
 export default function TodoBoard() {
   const router = useRouter();
@@ -64,11 +54,11 @@ export default function TodoBoard() {
               <div ref={provided.innerRef} {...provided.droppableProps}>
                 {tasks?.map((task, index) => (
                   <Draggable key={task.id} draggableId={task.id} index={index}>
-                    {(dragProvided: DraggableProvided) => (
+                    {(provided: DraggableProvided) => (
                       <div
-                        ref={dragProvided.innerRef}
-                        {...dragProvided.draggableProps}
-                        {...dragProvided.dragHandleProps}
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
                       >
                         <TodoCard task={task} />
                       </div>
@@ -92,11 +82,11 @@ export default function TodoBoard() {
                     draggableId={`selected-${task.id}`}
                     index={index}
                   >
-                    {(dragProvided: DraggableProvided) => (
+                    {(provided: DraggableProvided) => (
                       <div
-                        ref={dragProvided.innerRef}
-                        {...dragProvided.draggableProps}
-                        {...dragProvided.dragHandleProps}
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
                       >
                         <Card className="p-4">{task.content}</Card>
                       </div>
