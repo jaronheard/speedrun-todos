@@ -7,6 +7,7 @@ import {
   Draggable,
   type DroppableProvided,
   type DraggableProvided,
+  type DraggableLocation,
 } from "@hello-pangea/dnd";
 import { useState, useEffect } from "react";
 import { Button } from "~/components/ui/button";
@@ -38,36 +39,71 @@ export default function TodoBoard() {
     if (!result.destination) return;
 
     const { source, destination } = result;
-    if (source.droppableId === destination.droppableId) return;
 
+    // Handle reordering within the same list
+    if (source.droppableId === destination.droppableId) {
+      const items =
+        source.droppableId === "tasks"
+          ? [...availableTasks]
+          : [...selectedTasks];
+      const [reorderedItem] = items.splice(source.index, 1);
+      items.splice(destination.index, 0, reorderedItem);
+
+      if (source.droppableId === "tasks") {
+        setAvailableTasks(items);
+      } else {
+        setSelectedTasks(items);
+      }
+      return;
+    }
+
+    // Handle moving between lists
     if (destination.droppableId === "selected") {
       const task = availableTasks[source.index];
       if (task) {
-        setSelectedTasks([...selectedTasks, task]);
-        // Remove the task from available tasks
-        setAvailableTasks(
-          availableTasks.filter((_, index) => index !== source.index),
+        const newAvailableTasks = availableTasks.filter(
+          (_, index) => index !== source.index,
         );
+        const newSelectedTasks = [...selectedTasks];
+        newSelectedTasks.splice(destination.index, 0, task);
+
+        setSelectedTasks(newSelectedTasks);
+        setAvailableTasks(newAvailableTasks);
       }
     } else {
       const task = selectedTasks[source.index];
       if (task) {
-        setAvailableTasks([...availableTasks, task]);
-        setSelectedTasks(
-          selectedTasks.filter((_, index) => index !== source.index),
+        const newSelectedTasks = selectedTasks.filter(
+          (_, index) => index !== source.index,
         );
+        const newAvailableTasks = [...availableTasks];
+        newAvailableTasks.splice(destination.index, 0, task);
+
+        setAvailableTasks(newAvailableTasks);
+        setSelectedTasks(newSelectedTasks);
       }
     }
   };
 
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-      <DragDropContext onDragEnd={onDragEnd}>
+      <DragDropContext
+        onDragEnd={onDragEnd}
+        onDragUpdate={(update) => {
+          if (update.destination) {
+            // You can use these values to update positioning if needed
+          }
+        }}
+      >
         <div className="space-y-4">
           <h2 className="text-2xl font-bold">Available Tasks</h2>
           <Droppable droppableId="tasks">
             {(provided: DroppableProvided) => (
-              <div ref={provided.innerRef} {...provided.droppableProps}>
+              <div
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+                className="rounded-md border border-dashed p-4"
+              >
                 {availableTasks.map((task, index) => (
                   <Draggable key={task.id} draggableId={task.id} index={index}>
                     {(provided: DraggableProvided) => (
@@ -75,8 +111,11 @@ export default function TodoBoard() {
                         ref={provided.innerRef}
                         {...provided.draggableProps}
                         {...provided.dragHandleProps}
+                        style={provided.draggableProps.style}
                       >
-                        <TodoCard task={task} />
+                        <div className="py-2">
+                          <TodoCard task={task} />
+                        </div>
                       </div>
                     )}
                   </Draggable>
@@ -91,7 +130,11 @@ export default function TodoBoard() {
           <h2 className="text-2xl font-bold">Speedrun Queue</h2>
           <Droppable droppableId="selected">
             {(provided: DroppableProvided) => (
-              <div ref={provided.innerRef} {...provided.droppableProps}>
+              <div
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+                className="rounded-md border border-dashed p-4"
+              >
                 {selectedTasks.map((task, index) => (
                   <Draggable
                     key={task.id}
@@ -103,8 +146,11 @@ export default function TodoBoard() {
                         ref={provided.innerRef}
                         {...provided.draggableProps}
                         {...provided.dragHandleProps}
+                        style={provided.draggableProps.style}
                       >
-                        <Card className="p-4">{task.content}</Card>
+                        <div className="py-2">
+                          <TodoCard task={task} />
+                        </div>
                       </div>
                     )}
                   </Draggable>
