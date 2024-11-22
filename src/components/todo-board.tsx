@@ -8,7 +8,7 @@ import {
   type DroppableProvided,
   type DraggableProvided,
 } from "@hello-pangea/dnd";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { useRouter } from "next/navigation";
@@ -19,6 +19,7 @@ import { type Task } from "@doist/todoist-api-typescript";
 export default function TodoBoard() {
   const router = useRouter();
   const [selectedTasks, setSelectedTasks] = useState<Task[]>([]);
+  const [availableTasks, setAvailableTasks] = useState<Task[]>([]);
 
   const { data: account } = api.todoist.getAccount.useQuery();
   const { data: tasks } = api.todoist.getTasks.useQuery(
@@ -26,21 +27,36 @@ export default function TodoBoard() {
     { enabled: !!account?.access_token },
   );
 
+  // Initialize available tasks when tasks are first loaded
+  useEffect(() => {
+    if (tasks) {
+      setAvailableTasks(tasks);
+    }
+  }, [tasks]);
+
   const onDragEnd = (result: DropResult) => {
-    if (!result.destination || !tasks) return;
+    if (!result.destination) return;
 
     const { source, destination } = result;
     if (source.droppableId === destination.droppableId) return;
 
     if (destination.droppableId === "selected") {
-      const task = tasks[source.index];
+      const task = availableTasks[source.index];
       if (task) {
         setSelectedTasks([...selectedTasks, task]);
+        // Remove the task from available tasks
+        setAvailableTasks(
+          availableTasks.filter((_, index) => index !== source.index),
+        );
       }
     } else {
-      setSelectedTasks(
-        selectedTasks.filter((_, index) => index !== source.index),
-      );
+      const task = selectedTasks[source.index];
+      if (task) {
+        setAvailableTasks([...availableTasks, task]);
+        setSelectedTasks(
+          selectedTasks.filter((_, index) => index !== source.index),
+        );
+      }
     }
   };
 
@@ -52,7 +68,7 @@ export default function TodoBoard() {
           <Droppable droppableId="tasks">
             {(provided: DroppableProvided) => (
               <div ref={provided.innerRef} {...provided.droppableProps}>
-                {tasks?.map((task, index) => (
+                {availableTasks.map((task, index) => (
                   <Draggable key={task.id} draggableId={task.id} index={index}>
                     {(provided: DraggableProvided) => (
                       <div
