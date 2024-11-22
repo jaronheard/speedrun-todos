@@ -98,11 +98,17 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
       <Card className="p-6">
         <h2 className="mb-4 text-2xl font-bold">Summary</h2>
         <div className="space-y-4">
-          <p>Total time: {formatTime(elapsedTime)}</p>
+          <p>
+            Total time:{" "}
+            <span className="font-mono">{formatTime(elapsedTime)}</span>
+          </p>
           <ul className="space-y-2">
             {completedTasks.map((task) => (
               <li key={task.id}>
-                ✅ {task.content} - {formatTime(task.duration.amount * 60000)}
+                ✅ {task.content} -{" "}
+                <span className="font-mono">
+                  {formatTime(task.duration.amount * 60000)}
+                </span>
               </li>
             ))}
           </ul>
@@ -115,13 +121,16 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
   return (
     <Card className="p-6">
       <div className="space-y-4">
-        <div className="text-center text-2xl font-bold">
+        <div className="text-center font-mono text-2xl font-bold">
           {formatTime(elapsedTime)}
         </div>
         <div className="space-y-2">
           {completedTasks.map((task) => (
             <div key={task.id} className="text-muted-foreground line-through">
-              {task.content} - {formatTime(task.duration.amount * 60000)}
+              {task.content} -{" "}
+              <span className="font-mono">
+                {formatTime(task.duration.amount * 60000)}
+              </span>
             </div>
           ))}
           <div className="text-xl font-bold">

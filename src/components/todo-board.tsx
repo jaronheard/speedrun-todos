@@ -7,26 +7,27 @@ import {
   Draggable,
   type DroppableProvided,
   type DraggableProvided,
-  type DraggableLocation,
 } from "@hello-pangea/dnd";
 import { useState, useEffect } from "react";
 import { Button } from "~/components/ui/button";
-import { Card } from "~/components/ui/card";
 import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
 import TodoCard from "./todo-card";
 import { type Task } from "@doist/todoist-api-typescript";
+import { Loader2 } from "lucide-react";
 
 export default function TodoBoard() {
   const router = useRouter();
   const [selectedTasks, setSelectedTasks] = useState<Task[]>([]);
   const [availableTasks, setAvailableTasks] = useState<Task[]>([]);
 
-  const { data: account } = api.todoist.getAccount.useQuery();
-  const { data: tasks } = api.todoist.getTasks.useQuery(
-    { key: account?.access_token ?? "" },
-    { enabled: !!account?.access_token },
-  );
+  const { data: account, isLoading: isLoadingAccount } =
+    api.todoist.getAccount.useQuery();
+  const { data: tasks, isLoading: isLoadingTasks } =
+    api.todoist.getTasks.useQuery(
+      { key: account?.access_token ?? "" },
+      { enabled: !!account?.access_token },
+    );
 
   // Initialize available tasks when tasks are first loaded
   useEffect(() => {
@@ -47,12 +48,14 @@ export default function TodoBoard() {
           ? [...availableTasks]
           : [...selectedTasks];
       const [reorderedItem] = items.splice(source.index, 1);
-      items.splice(destination.index, 0, reorderedItem);
+      if (reorderedItem) {
+        items.splice(destination.index, 0, reorderedItem);
 
-      if (source.droppableId === "tasks") {
-        setAvailableTasks(items);
-      } else {
-        setSelectedTasks(items);
+        if (source.droppableId === "tasks") {
+          setAvailableTasks(items);
+        } else {
+          setSelectedTasks(items);
+        }
       }
       return;
     }
@@ -84,6 +87,22 @@ export default function TodoBoard() {
       }
     }
   };
+
+  if (isLoadingAccount || isLoadingTasks) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!tasks) {
+    return (
+      <div className="grid h-[50vh] place-items-center">
+        <p className="text-sm text-muted-foreground">No tasks found</p>
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
