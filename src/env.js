@@ -11,8 +11,8 @@ export const env = createEnv({
       process.env.NODE_ENV === "production"
         ? z.string()
         : z.string().optional(),
-    TODOIST_CLIENT_ID: z.string(),
-    TODOIST_CLIENT_SECRET: z.string(),
+    AUTH_TODOIST_ID: z.string(),
+    AUTH_TODOIST_SECRET: z.string(),
     DATABASE_URL: z.string().url(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
@@ -34,8 +34,8 @@ export const env = createEnv({
    */
   runtimeEnv: {
     AUTH_SECRET: process.env.AUTH_SECRET,
-    TODOIST_CLIENT_ID: process.env.TODOIST_CLIENT_ID,
-    TODOIST_CLIENT_SECRET: process.env.TODOIST_CLIENT_SECRET,
+    AUTH_TODOIST_ID: process.env.AUTH_TODOIST_ID,
+    AUTH_TODOIST_SECRET: process.env.AUTH_TODOIST_SECRET,
     DATABASE_URL: process.env.DATABASE_URL,
     NODE_ENV: process.env.NODE_ENV,
   },

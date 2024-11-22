@@ -1,7 +1,8 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { type DefaultSession, type NextAuthConfig } from "next-auth";
-import DiscordProvider from "next-auth/providers/discord";
+import Todoist from "next-auth/providers/todoist";
 
+import { env } from "~/env";
 import { db } from "~/server/db";
 
 /**
@@ -18,11 +19,6 @@ declare module "next-auth" {
       // role: UserRole;
     } & DefaultSession["user"];
   }
-
-  // interface User {
-  //   // ...other properties
-  //   // role: UserRole;
-  // }
 }
 
 /**
@@ -32,16 +28,47 @@ declare module "next-auth" {
  */
 export const authConfig = {
   providers: [
-    DiscordProvider,
-    /**
-     * ...add more providers here.
-     *
-     * Most other providers require a bit more work than the Discord provider. For example, the
-     * GitHub provider requires you to add the `refresh_token_expires_in` field to the Account
-     * model. Refer to the NextAuth.js docs for the provider you want to use. Example:
-     *
-     * @see https://next-auth.js.org/providers/github
-     */
+    Todoist({
+      clientId: env.AUTH_TODOIST_ID,
+      clientSecret: env.AUTH_TODOIST_SECRET,
+      issuer: "https://todoist.com",
+      authorization: {
+        url: "https://todoist.com/oauth/authorize",
+        params: { scope: "data:read_write,data:delete" },
+      },
+      token: {
+        url: "https://todoist.com/oauth/access_token",
+      },
+      userinfo: {
+        url: "https://api.todoist.com/sync/v9/sync",
+        params: { resource_types: '["user"]' },
+        async request(context) {
+          const response = await fetch(
+            context.provider.userinfo?.url as string,
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${context.tokens.access_token}`,
+                "Content-Type": "application/x-www-form-urlencoded",
+              },
+              body: new URLSearchParams({
+                sync_token: "*",
+                resource_types: '["user"]',
+              }),
+            },
+          );
+          const data = await response.json();
+          const profile = data.user;
+
+          return {
+            id: profile.id.toString(),
+            name: profile.full_name,
+            email: profile.email,
+            image: profile.avatar_url,
+          };
+        },
+      },
+    }),
   ],
   adapter: PrismaAdapter(db),
   callbacks: {
