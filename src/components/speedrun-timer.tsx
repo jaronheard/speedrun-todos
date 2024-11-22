@@ -12,10 +12,7 @@ interface SpeedrunTimerProps {
 }
 
 interface CompletedTask extends Task {
-  duration: {
-    amount: number;
-    unit: "minute";
-  };
+  duration: number;
 }
 
 export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
@@ -25,6 +22,8 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
   const [startTime, setStartTime] = useState<number | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [completedTasks, setCompletedTasks] = useState<CompletedTask[]>([]);
+  const [pausedTime, setPausedTime] = useState(0);
+  const [taskStartTime, setTaskStartTime] = useState<number | null>(null);
 
   const completeTodoistTask = api.todoist.completeTask.useMutation();
 
@@ -43,22 +42,32 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
     const handleKeyPress = (event: KeyboardEvent) => {
       if (event.code === "Space") {
         event.preventDefault();
+        if (isRunning) {
+          setPausedTime(elapsedTime);
+        } else {
+          setStartTime(Date.now() - elapsedTime);
+        }
         setIsRunning((prev) => !prev);
       } else if (event.code === "Enter" && isRunning) {
         event.preventDefault();
         const task = tasks[currentTaskIndex];
         if (task) {
-          const durationMs = Date.now() - (startTime ?? Date.now());
-          setCompletedTasks([
+          const taskDurationMs = Date.now() - (taskStartTime ?? Date.now());
+          const newCompletedTasks = [
             ...completedTasks,
             {
               ...task,
-              duration: {
-                amount: Math.round(durationMs / 60000),
-                unit: "minute",
-              },
+              duration: taskDurationMs,
             },
-          ]);
+          ];
+          setCompletedTasks(newCompletedTasks);
+
+          if (currentTaskIndex === tasks.length - 1) {
+            setIsRunning(false);
+          } else {
+            setTaskStartTime(Date.now());
+          }
+
           setCurrentTaskIndex((prev) => prev + 1);
         }
       }
@@ -66,12 +75,21 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
 
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [currentTaskIndex, isRunning, startTime, tasks, completedTasks]);
+  }, [
+    currentTaskIndex,
+    isRunning,
+    taskStartTime,
+    tasks,
+    completedTasks,
+    elapsedTime,
+  ]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isRunning) {
       setStartTime((prev) => prev ?? Date.now());
+      setTaskStartTime((prev) => prev ?? Date.now());
+
       interval = setInterval(() => {
         setElapsedTime(Date.now() - (startTime ?? Date.now()));
       }, 100);
@@ -85,7 +103,7 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
         completeTodoistTask.mutateAsync({
           key: process.env.NEXT_PUBLIC_TODOIST_KEY!,
           id: task.id,
-          content: `⏱️${formatTime(task.duration.amount * 60000)} - ${task.content}`,
+          content: `⏱️${formatTime(task.duration)} - ${task.content}`,
           labels: ["speedrun", ...(task.labels ?? [])],
         }),
       ),
@@ -106,9 +124,7 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
             {completedTasks.map((task) => (
               <li key={task.id}>
                 ✅ {task.content} -{" "}
-                <span className="font-mono">
-                  {formatTime(task.duration.amount * 60000)}
-                </span>
+                <span className="font-mono">{formatTime(task.duration)}</span>
               </li>
             ))}
           </ul>
@@ -128,9 +144,7 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
           {completedTasks.map((task) => (
             <div key={task.id} className="text-muted-foreground line-through">
               {task.content} -{" "}
-              <span className="font-mono">
-                {formatTime(task.duration.amount * 60000)}
-              </span>
+              <span className="font-mono">{formatTime(task.duration)}</span>
             </div>
           ))}
           <div className="text-xl font-bold">
