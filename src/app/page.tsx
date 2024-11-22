@@ -1,23 +1,25 @@
 import { auth } from "~/server/auth";
 import { redirect } from "next/navigation";
-import SpeedrunTimer from "~/components/speedrun-timer";
+import TodoBoard from "~/components/todo-board";
+import { UserNav } from "~/components/user-nav";
 
-export default async function SpeedrunPage({
-  searchParams,
-}: {
-  searchParams: { tasks?: string };
-}) {
+export default async function Home() {
   const session = await auth();
 
   if (!session?.user) {
     redirect("/api/auth/signin");
   }
 
-  const tasks = searchParams.tasks ? JSON.parse(searchParams.tasks) : [];
-
   return (
-    <main className="container mx-auto flex min-h-screen flex-col items-center justify-center p-4">
-      <SpeedrunTimer tasks={tasks} />
+    <main className="container mx-auto p-4">
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Welcome back!</h2>
+          <p className="text-muted-foreground">Speedrun your tasks</p>
+        </div>
+        <UserNav user={session.user} />
+      </div>
+      <TodoBoard />
     </main>
   );
 }

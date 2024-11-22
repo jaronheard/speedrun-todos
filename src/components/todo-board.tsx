@@ -30,9 +30,11 @@ export default function TodoBoard() {
   const router = useRouter();
   const [selectedTasks, setSelectedTasks] = useState<Task[]>([]);
 
-  const { data: tasks } = api.todoist.getTasks.useQuery({
-    key: process.env.NEXT_PUBLIC_TODOIST_KEY!,
-  });
+  const { data: account } = api.todoist.getAccount.useQuery();
+  const { data: tasks } = api.todoist.getTasks.useQuery(
+    { key: account?.access_token ?? "" },
+    { enabled: !!account?.access_token },
+  );
 
   const onDragEnd = (result: DropResult) => {
     if (!result.destination || !tasks) return;

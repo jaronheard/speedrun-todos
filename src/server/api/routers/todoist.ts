@@ -4,6 +4,16 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 export const todoistRouter = createTRPCRouter({
+  getAccount: protectedProcedure.query(async ({ ctx }) => {
+    const account = await ctx.db.account.findFirst({
+      where: {
+        userId: ctx.session.user.id,
+        provider: "todoist",
+      },
+    });
+    return account;
+  }),
+
   getTasks: protectedProcedure
     .input(z.object({ key: z.string() }))
     .query(async ({ input }) => {
