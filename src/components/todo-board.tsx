@@ -92,10 +92,11 @@ export default function TodoBoard() {
     }
 
     if (destination.droppableId === "selected") {
-      const task = availableTasks[source.index];
+      const sortedTasks = getSortedTasks(availableTasks);
+      const task = sortedTasks[source.index];
       if (task) {
         const newAvailableTasks = availableTasks.filter(
-          (_, index) => index !== source.index,
+          (t) => t.id !== task.id,
         );
         const newSelectedTasks = [...selectedTasks];
         newSelectedTasks.splice(destination.index, 0, task);

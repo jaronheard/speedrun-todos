@@ -80,6 +80,12 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
 
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.code === "Escape") {
+        event.preventDefault();
+        router.push("/");
+        return;
+      }
+
       if (event.code === "Space") {
         event.preventDefault();
         if (isRunning) {
@@ -142,6 +148,7 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
     lastPauseTime,
     handleSave,
     taskPausedTime,
+    router,
   ]);
 
   useEffect(() => {
@@ -307,6 +314,10 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
           <div className="flex items-center gap-2">
             <kbd className="rounded border px-2 py-1">Enter</kbd>
             <span>to complete task</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <kbd className="rounded border px-2 py-1">Esc</kbd>
+            <span>to exit</span>
           </div>
         </div>
       </div>
