@@ -13,16 +13,13 @@ import { Button } from "~/components/ui/button";
 import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
 import TodoCard from "./todo-card";
-import { type Task } from "@doist/todoist-api-typescript";
+import { type TaskData, mapTodoistTask, mapLinearIssue } from "~/types/task";
 import { Loader2 } from "lucide-react";
-import { type Issue } from "@linear/sdk";
-
-type CombinedTask = Task | Issue;
 
 export default function TodoBoard() {
   const router = useRouter();
-  const [selectedTasks, setSelectedTasks] = useState<CombinedTask[]>([]);
-  const [availableTasks, setAvailableTasks] = useState<CombinedTask[]>([]);
+  const [selectedTasks, setSelectedTasks] = useState<TaskData[]>([]);
+  const [availableTasks, setAvailableTasks] = useState<TaskData[]>([]);
 
   const { data: account, isLoading: isLoadingAccount } =
     api.todoist.getAccount.useQuery();
@@ -39,8 +36,8 @@ export default function TodoBoard() {
   );
 
   useEffect(() => {
-    const todoistTasks = tasks ?? [];
-    const linearTasks = linearIssues ?? [];
+    const todoistTasks = (tasks ?? []).map(mapTodoistTask);
+    const linearTasks = (linearIssues ?? []).map(mapLinearIssue);
     setAvailableTasks([...todoistTasks, ...linearTasks]);
   }, [tasks, linearIssues]);
 
@@ -132,13 +129,7 @@ export default function TodoBoard() {
                 className="rounded-md border border-dashed p-4"
               >
                 {availableTasks.map((task, index) => (
-                  <Draggable
-                    key={isLinearTask(task) ? `linear-${task.id}` : task.id}
-                    draggableId={
-                      isLinearTask(task) ? `linear-${task.id}` : task.id
-                    }
-                    index={index}
-                  >
+                  <Draggable key={task.id} draggableId={task.id} index={index}>
                     {(provided: DraggableProvided) => (
                       <div
                         ref={provided.innerRef}
@@ -170,12 +161,8 @@ export default function TodoBoard() {
               >
                 {selectedTasks.map((task, index) => (
                   <Draggable
-                    key={isLinearTask(task) ? `linear-${task.id}` : task.id}
-                    draggableId={
-                      isLinearTask(task)
-                        ? `selected-linear-${task.id}`
-                        : `selected-${task.id}`
-                    }
+                    key={task.id}
+                    draggableId={`selected-${task.id}`}
                     index={index}
                   >
                     {(provided: DraggableProvided) => (
@@ -210,8 +197,4 @@ export default function TodoBoard() {
       </DragDropContext>
     </div>
   );
-}
-
-function isLinearTask(task: CombinedTask): task is Issue {
-  return "identifier" in task;
 }

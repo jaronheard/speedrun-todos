@@ -5,22 +5,15 @@ import { Card } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
-import { type Task } from "@doist/todoist-api-typescript";
-import { type Issue } from "@linear/sdk";
+import { type TaskData } from "~/types/task";
 import { toast } from "sonner";
 
-type CombinedTask = Task | Issue;
-
 interface SpeedrunTimerProps {
-  tasks: CombinedTask[];
+  tasks: TaskData[];
 }
 
-interface CompletedTask extends CombinedTask {
+interface CompletedTaskData extends TaskData {
   duration: number;
-}
-
-function isLinearTask(task: CombinedTask): task is Issue {
-  return "identifier" in task;
 }
 
 export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
@@ -29,7 +22,7 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
   const [isRunning, setIsRunning] = useState(false);
   const [startTime, setStartTime] = useState<number | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
-  const [completedTasks, setCompletedTasks] = useState<CompletedTask[]>([]);
+  const [completedTasks, setCompletedTasks] = useState<CompletedTaskData[]>([]);
   const [pausedTime, setPausedTime] = useState(0);
   const [taskStartTime, setTaskStartTime] = useState<number | null>(null);
 
@@ -108,25 +101,25 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
     return () => clearInterval(interval);
   }, [isRunning, startTime]);
 
-  const getTaskContent = (task: CombinedTask) => {
-    return isLinearTask(task)
+  const getTaskContent = (task: TaskData) => {
+    return task.source === "linear"
       ? `${task.identifier}: ${task.title}`
-      : task.content;
+      : task.title;
   };
 
   const handleSave = useCallback(async () => {
     router.push("/");
     const promise = Promise.all(
       completedTasks.map((task) => {
-        if (isLinearTask(task)) {
-          // Handle Linear task completion (if you have a mutation for it)
+        if (task.source === "linear") {
+          // Handle Linear task completion
           return Promise.resolve();
         }
         return completeTodoistTask.mutateAsync({
           key: tempKey,
           id: task.id,
-          content: `⏱️${formatTime(task.duration)} - ${task.content}`,
-          labels: ["speedrun", ...(task.labels ?? [])],
+          content: `⏱️${formatTime(task.duration)} - ${task.title}`,
+          labels: ["speedrun", ...(task.originalData.labels ?? [])],
         });
       }),
     ).then(async () => {
