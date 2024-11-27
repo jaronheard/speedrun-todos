@@ -262,7 +262,7 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="ml-2 h-6 px-2 text-xs"
+                      className="ml-2 h-6 px-2 text-xs text-muted-foreground"
                       onClick={() => window.open(task.url, "_blank")}
                     >
                       {task.identifier}
