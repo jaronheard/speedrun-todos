@@ -2,7 +2,6 @@ import { auth } from "~/server/auth";
 import { redirect } from "next/navigation";
 import TodoBoard from "~/components/todo-board";
 import { UserNav } from "~/components/user-nav";
-import { ConnectLinear } from "~/components/connect-linear";
 
 export default async function Home() {
   const session = await auth();
@@ -18,10 +17,7 @@ export default async function Home() {
           <h2 className="text-2xl font-bold tracking-tight">Welcome back!</h2>
           <p className="text-muted-foreground">Speedrun your tasks</p>
         </div>
-        <div className="flex items-center gap-4">
-          <ConnectLinear />
-          <UserNav user={session.user} />
-        </div>
+        <UserNav user={session.user} />
       </div>
       <TodoBoard />
     </main>

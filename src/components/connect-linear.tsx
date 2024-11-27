@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "./ui/button";
+import { DropdownMenuItem } from "./ui/dropdown-menu";
 import { api } from "~/trpc/react";
 
 export function ConnectLinear() {
@@ -26,12 +26,8 @@ export function ConnectLinear() {
   };
 
   return (
-    <Button
-      variant={isConnected ? "secondary" : "default"}
-      onClick={handleConnect}
-      disabled={isConnected}
-    >
+    <DropdownMenuItem onClick={handleConnect} disabled={isConnected}>
       {isConnected ? "Linear Connected" : "Connect Linear"}
-    </Button>
+    </DropdownMenuItem>
   );
 }
