@@ -1,6 +1,11 @@
 import { type Task } from "@doist/todoist-api-typescript";
 import { type Issue } from "@linear/sdk";
 
+export interface LinearLabel {
+  name: string;
+  color?: string;
+}
+
 export interface BaseTask {
   id: string;
   title: string;
@@ -46,11 +51,6 @@ export function mapTodoistTask(task: Task): TodoistTaskData {
   };
 }
 
-interface LinearLabel {
-  name: string;
-  color?: string;
-}
-
 export function mapLinearIssue(issue: Issue): LinearTaskData {
   return {
     id: issue.id,
@@ -60,13 +60,13 @@ export function mapLinearIssue(issue: Issue): LinearTaskData {
     source: "linear",
     originalData: issue,
     identifier: issue.identifier,
-    state: issue.state ? { name: String(issue.state.name) } : undefined,
-    priority: issue.priority,
-    estimate: issue.estimate,
+    state: issue.state?.name ? { name: String(issue.state.name) } : undefined,
+    priority: issue.priority ?? undefined,
+    estimate: issue.estimate ?? undefined,
     labels: issue.labels?.nodes?.map(
-      (label: any): LinearLabel => ({
-        name: String(label.name),
-        color: label.color,
+      (label): LinearLabel => ({
+        name: String(label.name ?? ""),
+        color: label.color ?? undefined,
       }),
     ),
     url: issue.url,

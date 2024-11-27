@@ -2,6 +2,7 @@ import {
   type TaskData,
   type LinearTaskData,
   type TodoistTaskData,
+  type LinearLabel,
 } from "~/types/task";
 import { Card, CardContent } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
@@ -9,6 +10,7 @@ import { formatDistanceToNow } from "date-fns";
 import { ExternalLink } from "lucide-react";
 import { Button } from "./ui/button";
 import { cn } from "~/lib/utils";
+import ReactMarkdown from "react-markdown";
 
 interface LinearPriorityBadgeProps {
   priority?: number;
@@ -109,9 +111,22 @@ function LinearTaskCard({ task }: { task: LinearTaskData }) {
         </div>
 
         {task.description && (
-          <p className="line-clamp-2 text-sm text-muted-foreground">
-            {task.description}
-          </p>
+          <div className="line-clamp-2 text-sm text-muted-foreground">
+            <ReactMarkdown
+              components={{
+                a: ({ node, ...props }) => (
+                  <a
+                    {...props}
+                    className="text-blue-500 hover:underline"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  />
+                ),
+              }}
+            >
+              {task.description}
+            </ReactMarkdown>
+          </div>
         )}
         {task.dueDate && (
           <p className="text-xs text-muted-foreground">
