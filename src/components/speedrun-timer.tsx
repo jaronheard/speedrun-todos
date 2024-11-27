@@ -5,15 +5,11 @@ import { Card } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
-import { type TaskData } from "~/types/task";
+import { type TaskData, type CompletedTaskData } from "~/types/task";
 import { toast } from "sonner";
 
 interface SpeedrunTimerProps {
   tasks: TaskData[];
-}
-
-interface CompletedTaskData extends TaskData {
-  duration: number;
 }
 
 export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
@@ -102,8 +98,8 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
     return () => clearInterval(interval);
   }, [isRunning, startTime]);
 
-  const getTaskContent = (task: TaskData) => {
-    return task.source === "linear"
+  const getTaskContent = (task: TaskData | CompletedTaskData) => {
+    return task.source === "linear" && "identifier" in task
       ? `${task.identifier}: ${task.title}`
       : task.title;
   };
@@ -122,7 +118,12 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
           key: tempKey,
           id: task.id,
           content: `⏱️${formatTime(task.duration)} - ${task.title}`,
-          labels: ["speedrun", ...(task.originalData.labels ?? [])],
+          labels: [
+            "speedrun",
+            ...(task.labels ?? [])
+              .map((label) => (typeof label === "string" ? label : label.name))
+              .filter((label): label is string => typeof label === "string"),
+          ],
         });
       }),
     ).then(async () => {
@@ -176,7 +177,7 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
             </div>
           ))}
           <div className="text-xl font-bold">
-            {getTaskContent(tasks[currentTaskIndex])}
+            {getTaskContent(tasks[currentTaskIndex]!)}
           </div>
           {tasks.slice(currentTaskIndex + 1).map((task) => (
             <div key={task.id} className="text-muted-foreground">

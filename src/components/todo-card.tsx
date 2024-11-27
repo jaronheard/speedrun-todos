@@ -81,15 +81,15 @@ function LinearTaskCard({ task }: { task: LinearTaskData }) {
         </div>
 
         <div className="flex flex-wrap items-center gap-1.5">
-          {task.state && (
+          {!!task.state && (
             <Badge variant="secondary" className="text-xs">
               {task.state.name}
             </Badge>
           )}
-          {task.priority && task.priority >= 0 && (
+          {!!task.priority && (
             <LinearPriorityBadge priority={task.priority} className="text-xs" />
           )}
-          {task.estimate && (
+          {!!task.estimate && (
             <Badge variant="outline" className="text-xs">
               {task.estimate} pts
             </Badge>
@@ -110,12 +110,12 @@ function LinearTaskCard({ task }: { task: LinearTaskData }) {
           ))}
         </div>
 
-        {task.description && (
+        {!!task.description && (
           <div className="line-clamp-2 text-sm text-muted-foreground">
             <ReactMarkdown>{task.description}</ReactMarkdown>
           </div>
         )}
-        {task.dueDate && (
+        {!!task.dueDate && (
           <p className="text-xs text-muted-foreground">
             Due {formatDistanceToNow(new Date(task.dueDate))}
           </p>

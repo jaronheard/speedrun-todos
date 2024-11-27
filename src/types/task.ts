@@ -12,13 +12,14 @@ export interface BaseTask {
   description?: string;
   dueDate?: string;
   source: "todoist" | "linear";
-  originalData: Task | Issue;
+  labels?: string[] | LinearLabel[];
 }
 
 export interface TodoistTaskData extends BaseTask {
   source: "todoist";
   originalData: Task;
   priority: number;
+  labels?: string[];
 }
 
 export interface LinearTaskData extends BaseTask {
@@ -30,14 +31,29 @@ export interface LinearTaskData extends BaseTask {
   };
   priority?: number;
   estimate?: number;
-  labels?: Array<{
-    name: string;
-    color?: string;
-  }>;
+  labels?: LinearLabel[];
   url?: string;
 }
 
 export type TaskData = TodoistTaskData | LinearTaskData;
+
+export type CompletedTaskData = {
+  id: string;
+  title: string;
+  description?: string;
+  dueDate?: string;
+  source: "todoist" | "linear";
+  labels?: string[] | LinearLabel[];
+  duration: number;
+  identifier?: string;
+  state?: {
+    name: string;
+  };
+  priority?: number;
+  estimate?: number;
+  url?: string;
+  originalData: Task | Issue;
+};
 
 export function mapTodoistTask(task: Task): TodoistTaskData {
   return {
@@ -48,6 +64,7 @@ export function mapTodoistTask(task: Task): TodoistTaskData {
     source: "todoist" as const,
     originalData: task,
     priority: task.priority ?? 1,
+    labels: task.labels,
   };
 }
 
@@ -56,19 +73,16 @@ export function mapLinearIssue(issue: Issue): LinearTaskData {
     id: issue.id,
     title: issue.title,
     description: issue.description ?? undefined,
-    dueDate: issue.dueDate ?? undefined,
+    dueDate: undefined,
     source: "linear",
     originalData: issue,
     identifier: issue.identifier,
-    state: issue.state?.name ? { name: String(issue.state.name) } : undefined,
+    state:
+      issue.state && typeof issue.state === "object" && "name" in issue.state
+        ? { name: String(issue.state.name) }
+        : undefined,
     priority: issue.priority ?? undefined,
     estimate: issue.estimate ?? undefined,
-    labels: issue.labels?.nodes?.map(
-      (label): LinearLabel => ({
-        name: String(label.name ?? ""),
-        color: label.color ?? undefined,
-      }),
-    ),
     url: issue.url,
   };
 }

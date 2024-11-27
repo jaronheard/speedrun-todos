@@ -15,6 +15,8 @@ import { api } from "~/trpc/react";
 import TodoCard from "./todo-card";
 import { type TaskData, mapTodoistTask, mapLinearIssue } from "~/types/task";
 import { Loader2 } from "lucide-react";
+import { type Task } from "@doist/todoist-api-typescript";
+import { type Issue } from "@linear/sdk";
 
 export default function TodoBoard() {
   const router = useRouter();
@@ -36,8 +38,12 @@ export default function TodoBoard() {
   );
 
   useEffect(() => {
-    const todoistTasks = (tasks ?? []).map(mapTodoistTask);
-    const linearTasks = (linearIssues ?? []).map(mapLinearIssue);
+    const todoistTasks = (tasks ?? []).map((task: Task) =>
+      mapTodoistTask(task),
+    );
+    const linearTasks = (linearIssues ?? []).map((issue: Issue) =>
+      mapLinearIssue(issue),
+    );
     setAvailableTasks([...todoistTasks, ...linearTasks]);
   }, [tasks, linearIssues]);
 
@@ -46,7 +52,6 @@ export default function TodoBoard() {
 
     const { source, destination } = result;
 
-    // Handle reordering within the same list
     if (source.droppableId === destination.droppableId) {
       const items =
         source.droppableId === "tasks"
@@ -65,7 +70,6 @@ export default function TodoBoard() {
       return;
     }
 
-    // Handle moving between lists
     if (destination.droppableId === "selected") {
       const task = availableTasks[source.index];
       if (task) {
