@@ -28,6 +28,7 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
 
   const utils = api.useUtils();
   const completeTodoistTask = api.todoist.completeTask.useMutation();
+  const completeLinearTask = api.integrations.completeLinearTask.useMutation();
 
   const tempKey = "55744da8e9d911a8d9506577615f048289aca85d";
 
@@ -112,8 +113,10 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
     const promise = Promise.all(
       completedTasks.map((task) => {
         if (task.source === "linear") {
-          // Handle Linear task completion
-          return Promise.resolve();
+          return completeLinearTask.mutateAsync({
+            id: task.id,
+            comment: `⏱️ Completed in ${formatTime(task.duration)}`,
+          });
         }
         return completeTodoistTask.mutateAsync({
           key: tempKey,
@@ -123,7 +126,10 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
         });
       }),
     ).then(async () => {
-      await utils.todoist.getTasks.invalidate();
+      await Promise.all([
+        utils.todoist.getTasks.invalidate(),
+        utils.integrations.getLinearTasks.invalidate(),
+      ]);
     });
 
     toast.promise(promise, {
@@ -131,7 +137,7 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
       success: "All tasks completed successfully!",
       error: "Failed to complete tasks",
     });
-  }, [completedTasks, completeTodoistTask, router, utils.todoist.getTasks]);
+  }, [completedTasks, completeTodoistTask, completeLinearTask, router, utils]);
 
   if (currentTaskIndex >= tasks.length) {
     return (
