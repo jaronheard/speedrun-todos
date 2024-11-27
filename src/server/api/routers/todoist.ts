@@ -2,6 +2,7 @@ import { TodoistApi } from "@doist/todoist-api-typescript";
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { env } from "~/env";
 
 export const todoistRouter = createTRPCRouter({
   getAccount: protectedProcedure.query(async ({ ctx }) => {
@@ -14,25 +15,22 @@ export const todoistRouter = createTRPCRouter({
     return account;
   }),
 
-  getTasks: protectedProcedure
-    .input(z.object({ key: z.string() }))
-    .query(async ({ input }) => {
-      const api = new TodoistApi(input.key);
-      const tasks = await api.getTasks({ filter: "!@speedrun" });
-      return tasks;
-    }),
+  getTasks: protectedProcedure.query(async () => {
+    const api = new TodoistApi(env.TODOIST_API_KEY);
+    const tasks = await api.getTasks({ filter: "!@speedrun" });
+    return tasks;
+  }),
 
   completeTask: protectedProcedure
     .input(
       z.object({
-        key: z.string(),
         id: z.string(),
         content: z.string(),
         labels: z.array(z.string()),
       }),
     )
     .mutation(async ({ input }) => {
-      const api = new TodoistApi(input.key);
+      const api = new TodoistApi(env.TODOIST_API_KEY);
 
       const results = await Promise.allSettled([
         api.updateTask(input.id, {
@@ -46,9 +44,9 @@ export const todoistRouter = createTRPCRouter({
     }),
 
   updateTaskContent: protectedProcedure
-    .input(z.object({ key: z.string(), id: z.string(), content: z.string() }))
+    .input(z.object({ id: z.string(), content: z.string() }))
     .mutation(async ({ input }) => {
-      const api = new TodoistApi(input.key);
+      const api = new TodoistApi(env.TODOIST_API_KEY);
       const task = await api.updateTask(input.id, {
         content: input.content,
       });

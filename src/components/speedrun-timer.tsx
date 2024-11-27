@@ -29,8 +29,6 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
   const completeTodoistTask = api.todoist.completeTask.useMutation();
   const completeLinearTask = api.integrations.completeLinearTask.useMutation();
 
-  const tempKey = "55744da8e9d911a8d9506577615f048289aca85d";
-
   const formatTime = (ms: number) => {
     const hours = Math.floor(ms / 3600000);
     const minutes = Math.floor((ms % 3600000) / 60000);
@@ -53,7 +51,6 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
           });
         }
         return completeTodoistTask.mutateAsync({
-          key: tempKey,
           id: task.id,
           content: `⏱️${formatTime(task.duration)} - ${task.title}`,
           labels: [

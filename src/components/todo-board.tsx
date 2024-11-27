@@ -36,10 +36,7 @@ export default function TodoBoard() {
   const { data: account, isLoading: isLoadingAccount } =
     api.todoist.getAccount.useQuery();
   const { data: tasks, isLoading: isLoadingTasks } =
-    api.todoist.getTasks.useQuery(
-      { key: account?.access_token ?? "" },
-      { enabled: !!account?.access_token },
-    );
+    api.todoist.getTasks.useQuery();
   const { data: linearIssues } = api.integrations.getLinearTasks.useQuery(
     undefined,
     {

@@ -18,6 +18,7 @@ export const env = createEnv({
       .enum(["development", "test", "production"])
       .default("development"),
     LINEAR_CLIENT_SECRET: z.string(),
+    TODOIST_API_KEY: z.string(),
   },
 
   /**
@@ -44,6 +45,7 @@ export const env = createEnv({
     NEXT_PUBLIC_LINEAR_CLIENT_ID: process.env.NEXT_PUBLIC_LINEAR_CLIENT_ID,
     NEXT_PUBLIC_LINEAR_REDIRECT_URI:
       process.env.NEXT_PUBLIC_LINEAR_REDIRECT_URI,
+    TODOIST_API_KEY: process.env.TODOIST_API_KEY,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
