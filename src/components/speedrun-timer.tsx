@@ -6,6 +6,7 @@ import { Button } from "~/components/ui/button";
 import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
 import { type Task } from "@doist/todoist-api-typescript";
+import { toast } from "sonner";
 
 interface SpeedrunTimerProps {
   tasks: Task[];
@@ -25,7 +26,10 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
   const [pausedTime, setPausedTime] = useState(0);
   const [taskStartTime, setTaskStartTime] = useState<number | null>(null);
 
+  const utils = api.useUtils();
   const completeTodoistTask = api.todoist.completeTask.useMutation();
+
+  const tempKey = "55744da8e9d911a8d9506577615f048289aca85d";
 
   const formatTime = (ms: number) => {
     const hours = Math.floor(ms / 3600000);
@@ -98,18 +102,27 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
   }, [isRunning, startTime]);
 
   const handleSave = useCallback(async () => {
-    await Promise.all(
+    router.push("/");
+
+    const promise = Promise.all(
       completedTasks.map((task) =>
         completeTodoistTask.mutateAsync({
-          key: process.env.NEXT_PUBLIC_TODOIST_KEY!,
+          key: tempKey,
           id: task.id,
           content: `⏱️${formatTime(task.duration)} - ${task.content}`,
           labels: ["speedrun", ...(task.labels ?? [])],
         }),
       ),
-    );
-    router.push("/");
-  }, [completedTasks, completeTodoistTask, router]);
+    ).then(async () => {
+      await utils.todoist.getTasks.invalidate();
+    });
+
+    toast.promise(promise, {
+      loading: "Completing tasks...",
+      success: "All tasks completed successfully!",
+      error: "Failed to complete tasks",
+    });
+  }, [completedTasks, completeTodoistTask, router, utils.todoist.getTasks]);
 
   if (currentTaskIndex >= tasks.length) {
     return (
