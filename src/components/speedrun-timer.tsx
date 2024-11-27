@@ -160,6 +160,12 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
     return () => clearInterval(interval);
   }, [isRunning, startTime, taskStartTime, pausedTime, taskPausedTime]);
 
+  useEffect(() => {
+    setIsRunning(true);
+    setStartTime(Date.now());
+    setTaskStartTime(Date.now());
+  }, []);
+
   const getTaskContent = (task: TaskData | CompletedTaskData) => {
     return (
       <>
