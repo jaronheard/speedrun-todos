@@ -4,6 +4,48 @@ import { Badge } from "~/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { ExternalLink } from "lucide-react";
 import { Button } from "./ui/button";
+import { cn } from "~/lib/utils";
+
+interface LinearPriorityBadgeProps {
+  priority?: number;
+  className?: string;
+}
+
+export function LinearPriorityBadge({
+  priority,
+  className,
+}: LinearPriorityBadgeProps) {
+  if (!priority) return null;
+
+  const priorityColors = {
+    0: "bg-gray-100 text-gray-600",
+    1: "bg-red-50 text-red-600",
+    2: "bg-red-100 text-red-700",
+    3: "bg-red-400 text-red-800",
+    4: "bg-red-700 text-white",
+  };
+
+  const priorityIcons = {
+    0: "",
+    1: "Low",
+    2: "Medium",
+    3: "High",
+    4: "Urgent",
+  };
+
+  return (
+    <Badge
+      variant="outline"
+      className={cn(
+        "border-transparent font-medium",
+        priorityColors[priority as keyof typeof priorityColors],
+        className,
+      )}
+    >
+      {priorityIcons[priority as keyof typeof priorityIcons]}
+    </Badge>
+  );
+}
 
 function LinearTaskCard({ task }: { task: LinearTaskData }) {
   const openInLinear = () => {
@@ -39,14 +81,9 @@ function LinearTaskCard({ task }: { task: LinearTaskData }) {
               {task.state.name}
             </Badge>
           )}
-          {/* {task.priority && (
-            <Badge
-              variant={task.priority > 2 ? "destructive" : "secondary"}
-              className="text-xs"
-            >
-              P{task.priority}
-            </Badge>
-          )} */}
+          {task.priority >= 0 && (
+            <LinearPriorityBadge priority={task.priority} className="text-xs" />
+          )}
           {task.estimate && (
             <Badge variant="outline" className="text-xs">
               {task.estimate} pts
