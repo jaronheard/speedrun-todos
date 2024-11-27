@@ -25,18 +25,18 @@ export function LinearPriorityBadge({
 
   const priorityColors = {
     0: "bg-gray-100 text-gray-600",
-    1: "bg-red-50 text-red-900",
-    2: "bg-red-300 text-red-900",
-    3: "bg-red-500 text-white",
-    4: "bg-red-800 text-white",
+    1: "bg-red-800 text-white",
+    2: "bg-red-500 text-white",
+    3: "bg-red-300 text-red-900",
+    4: "bg-red-50 text-red-900",
   };
 
   const priorityIcons = {
     0: "",
-    1: "Low",
-    2: "Medium",
-    3: "High",
-    4: "Urgent",
+    1: "Urgent",
+    2: "High",
+    3: "Medium",
+    4: "Low",
   };
 
   return (

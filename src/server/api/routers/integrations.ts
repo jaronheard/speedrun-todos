@@ -48,7 +48,6 @@ export const integrationsRouter = createTRPCRouter({
       if (!issues.nodes) {
         return [];
       }
-      console.log(issues.nodes);
       return issues.nodes;
     } catch (error) {
       console.error("Error fetching Linear tasks:", error);
