@@ -21,6 +21,7 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
   const [completedTasks, setCompletedTasks] = useState<CompletedTaskData[]>([]);
   const [pausedTime, setPausedTime] = useState(0);
   const [taskStartTime, setTaskStartTime] = useState<number | null>(null);
+  const [currentTaskTime, setCurrentTaskTime] = useState(0);
 
   const utils = api.useUtils();
   const completeTodoistTask = api.todoist.completeTask.useMutation();
@@ -93,10 +94,11 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
 
       interval = setInterval(() => {
         setElapsedTime(Date.now() - (startTime ?? Date.now()));
+        setCurrentTaskTime(Date.now() - (taskStartTime ?? Date.now()));
       }, 100);
     }
     return () => clearInterval(interval);
-  }, [isRunning, startTime]);
+  }, [isRunning, startTime, taskStartTime]);
 
   const getTaskContent = (task: TaskData | CompletedTaskData) => {
     return task.source === "linear" && "identifier" in task
@@ -166,8 +168,11 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
   return (
     <Card className="p-6">
       <div className="space-y-4">
-        <div className="text-center font-mono text-2xl font-bold">
-          {formatTime(elapsedTime)}
+        <div className="text-center">
+          <div className="text-sm text-muted-foreground">Current Task</div>
+          <div className="font-mono text-4xl font-bold">
+            {formatTime(currentTaskTime)}
+          </div>
         </div>
         <div className="space-y-2">
           {completedTasks.map((task) => (
@@ -184,6 +189,12 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
               {getTaskContent(task)}
             </div>
           ))}
+        </div>
+        <div className="border-t pt-4 text-center">
+          <div className="text-sm text-muted-foreground">Total Time</div>
+          <div className="font-mono text-xl font-bold">
+            {formatTime(elapsedTime)}
+          </div>
         </div>
       </div>
     </Card>
