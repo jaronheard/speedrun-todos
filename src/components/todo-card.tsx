@@ -64,19 +64,17 @@ function LinearTaskCard({ task }: { task: LinearTaskData }) {
       <CardContent className="flex h-full flex-col gap-2 p-4">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
-            <p className="flex gap-1 font-medium leading-tight">
-              <span className="shrink-0">{task.identifier}:</span>
-              <span className="truncate">{task.title}</span>
-            </p>
+            <p className="truncate font-medium leading-tight">{task.title}</p>
           </div>
           <Button
             variant="ghost"
-            size="icon"
-            className="h-6 w-6 shrink-0"
+            size="sm"
+            className="h-6 shrink-0 gap-1.5 text-xs"
             onClick={openInLinear}
             title="Open in Linear"
           >
-            <ExternalLink className="h-4 w-4" />
+            <span className="font-medium">{task.identifier}</span>
+            <ExternalLink className="h-3 w-3" />
           </Button>
         </div>
 
