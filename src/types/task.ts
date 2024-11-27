@@ -23,6 +23,13 @@ export interface LinearTaskData extends BaseTask {
   state?: {
     name: string;
   };
+  priority?: number;
+  estimate?: number;
+  labels?: Array<{
+    name: string;
+    color?: string;
+  }>;
+  url?: string;
 }
 
 export type TaskData = TodoistTaskData | LinearTaskData;
@@ -49,5 +56,12 @@ export function mapLinearIssue(issue: Issue): LinearTaskData {
     originalData: issue,
     identifier: issue.identifier,
     state: issue.state ? { name: issue.state.name } : undefined,
+    priority: issue.priority,
+    estimate: issue.estimate,
+    labels: issue.labels?.nodes.map((label) => ({
+      name: label.name,
+      color: label.color,
+    })),
+    url: issue.url,
   };
 }
