@@ -103,7 +103,7 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
   const getTaskContent = (task: TaskData | CompletedTaskData) => {
     return (
       <>
-        {task.title}{" "}
+        <div>{task.title}</div>
         {task.source === "linear" && "identifier" in task && (
           <Button
             variant="outline"
@@ -156,7 +156,7 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
 
   if (currentTaskIndex >= tasks.length) {
     return (
-      <Card className="p-6">
+      <Card className="w-[600px] p-6">
         <h2 className="mb-4 text-2xl font-bold">Summary</h2>
         <div className="space-y-4">
           <p>
@@ -165,15 +165,25 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
           </p>
           <ul className="space-y-2">
             {completedTasks.map((task) => (
-              <li key={task.id} className="flex items-center gap-2">
-                ✅{" "}
-                <span className="font-mono">{formatTime(task.duration)}</span> -{" "}
-                <span className="line-through">{task.title}</span>{" "}
+              <li
+                key={task.id}
+                className="flex items-center justify-between gap-4"
+              >
+                <div className="flex flex-grow-0 items-center gap-2 overflow-hidden">
+                  <span className="shrink-0">✅</span>
+                  <span className="shrink-0 font-mono">
+                    {formatTime(task.duration)}
+                  </span>
+                  <span className="shrink-0">-</span>
+                  <span className="overflow-hidden text-ellipsis whitespace-nowrap">
+                    {task.title}
+                  </span>
+                </div>
                 {task.source === "linear" && "identifier" in task && (
                   <Button
                     variant="outline"
                     size="sm"
-                    className="ml-2 h-6 px-2 text-xs"
+                    className="h-6 shrink-0 px-2 text-xs"
                     onClick={() => window.open(task.url, "_blank")}
                   >
                     {task.identifier}
@@ -189,7 +199,7 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
   }
 
   return (
-    <Card className="p-6">
+    <Card className="w-[600px] p-6">
       <div className="space-y-4">
         <div className="text-center">
           <div className="text-sm text-muted-foreground">Current Task</div>
@@ -201,10 +211,12 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
           {completedTasks.map((task) => (
             <div
               key={task.id}
-              className="flex items-center gap-2 text-muted-foreground"
+              className="flex items-center justify-between gap-2"
             >
-              <span className="font-mono">{formatTime(task.duration)}</span> -{" "}
-              <span className="line-through">{task.title}</span>{" "}
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <span className="font-mono">{formatTime(task.duration)}</span> -{" "}
+                <span className="line-through">{task.title}</span>
+              </div>
               {task.source === "linear" && "identifier" in task && (
                 <Button
                   variant="outline"
@@ -217,13 +229,13 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
               )}
             </div>
           ))}
-          <div className="flex items-center text-xl font-bold">
+          <div className="flex items-center justify-between text-xl font-bold">
             {getTaskContent(tasks[currentTaskIndex]!)}
           </div>
           {tasks.slice(currentTaskIndex + 1).map((task) => (
             <div
               key={task.id}
-              className="flex items-center text-muted-foreground"
+              className="flex items-center justify-between text-muted-foreground"
             >
               {getTaskContent(task)}
             </div>
