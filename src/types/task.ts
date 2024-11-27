@@ -46,6 +46,11 @@ export function mapTodoistTask(task: Task): TodoistTaskData {
   };
 }
 
+interface LinearLabel {
+  name: string;
+  color?: string;
+}
+
 export function mapLinearIssue(issue: Issue): LinearTaskData {
   return {
     id: issue.id,
@@ -55,13 +60,15 @@ export function mapLinearIssue(issue: Issue): LinearTaskData {
     source: "linear",
     originalData: issue,
     identifier: issue.identifier,
-    state: issue.state ? { name: issue.state.name } : undefined,
+    state: issue.state ? { name: String(issue.state.name) } : undefined,
     priority: issue.priority,
     estimate: issue.estimate,
-    labels: issue.labels?.nodes.map((label) => ({
-      name: label.name,
-      color: label.color,
-    })),
+    labels: issue.labels?.nodes?.map(
+      (label: any): LinearLabel => ({
+        name: String(label.name),
+        color: label.color,
+      }),
+    ),
     url: issue.url,
   };
 }

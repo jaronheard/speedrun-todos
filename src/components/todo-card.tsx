@@ -1,4 +1,8 @@
-import { type TaskData } from "~/types/task";
+import {
+  type TaskData,
+  type LinearTaskData,
+  type TodoistTaskData,
+} from "~/types/task";
 import { Card, CardContent } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
@@ -49,7 +53,7 @@ export function LinearPriorityBadge({
 
 function LinearTaskCard({ task }: { task: LinearTaskData }) {
   const openInLinear = () => {
-    const baseUrl = task.originalData.url;
+    const baseUrl = task.url;
     if (baseUrl) {
       window.open(baseUrl, "_blank");
     }
@@ -59,9 +63,10 @@ function LinearTaskCard({ task }: { task: LinearTaskData }) {
     <Card className="min-h-[100px]">
       <CardContent className="flex h-full flex-col gap-2 p-4">
         <div className="flex items-start justify-between gap-2">
-          <div className="flex-1">
-            <p className="truncate font-medium leading-tight">
-              {task.identifier}: {task.title}
+          <div className="min-w-0 flex-1">
+            <p className="flex gap-1 font-medium leading-tight">
+              <span className="shrink-0">{task.identifier}:</span>
+              <span className="truncate">{task.title}</span>
             </p>
           </div>
           <Button
@@ -89,7 +94,7 @@ function LinearTaskCard({ task }: { task: LinearTaskData }) {
               {task.estimate} pts
             </Badge>
           )}
-          {task.labels?.map((label) => (
+          {task.labels?.map((label: LinearLabel) => (
             <Badge
               key={label.name}
               variant="outline"
