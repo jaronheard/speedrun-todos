@@ -103,7 +103,6 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
 
   const handleSave = useCallback(async () => {
     router.push("/");
-
     const promise = Promise.all(
       completedTasks.map((task) =>
         completeTodoistTask.mutateAsync({

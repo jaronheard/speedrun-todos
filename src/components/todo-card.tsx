@@ -10,12 +10,12 @@ export default function TodoCard({ task }: { task: Task }) {
         <div className="flex-1 overflow-hidden">
           <p className="truncate font-medium">{task.content}</p>
           {task.due && (
-            <p className="text-muted-foreground truncate text-sm">
+            <p className="truncate text-sm text-muted-foreground">
               Due {formatDistanceToNow(new Date(task.due.date))}
             </p>
           )}
           {task.description && (
-            <p className="text-muted-foreground line-clamp-2 text-sm">
+            <p className="line-clamp-2 text-sm text-muted-foreground">
               {task.description}
             </p>
           )}
