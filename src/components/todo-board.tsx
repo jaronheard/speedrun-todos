@@ -31,7 +31,7 @@ export default function TodoBoard() {
   const router = useRouter();
   const [selectedTasks, setSelectedTasks] = useState<TaskData[]>([]);
   const [availableTasks, setAvailableTasks] = useState<TaskData[]>([]);
-  const [sortOption, setSortOption] = useState<SortOption>("none");
+  const [sortOption, setSortOption] = useState<SortOption>("priority");
 
   const { data: account, isLoading: isLoadingAccount } =
     api.todoist.getAccount.useQuery();
@@ -126,7 +126,7 @@ export default function TodoBoard() {
         return tasksCopy.sort((a, b) => {
           const priorityA = "priority" in a ? (a.priority ?? 0) : 0;
           const priorityB = "priority" in b ? (b.priority ?? 0) : 0;
-          return priorityB - priorityA; // Higher priority first
+          return priorityA - priorityB; // Higher priority first based on lower number
         });
       case "dueDate":
         return tasksCopy.sort((a, b) => {
