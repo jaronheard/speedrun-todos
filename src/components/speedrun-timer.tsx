@@ -42,100 +42,6 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
       .padStart(2, "0")}.${tenths}`;
   };
 
-  useEffect(() => {
-    const handleKeyPress = (event: KeyboardEvent) => {
-      if (event.code === "Space") {
-        event.preventDefault();
-        if (isRunning) {
-          setLastPauseTime(Date.now());
-          setIsRunning(false);
-        } else {
-          if (lastPauseTime) {
-            const pauseDuration = Date.now() - lastPauseTime;
-            setPausedTime((prev) => prev + pauseDuration);
-            setTaskPausedTime((prev) => prev + pauseDuration);
-          }
-          setLastPauseTime(null);
-          setIsRunning(true);
-        }
-      } else if (
-        event.code === "Enter" &&
-        isRunning &&
-        ((event.metaKey && currentTaskIndex >= tasks.length) ||
-          (!event.metaKey && currentTaskIndex < tasks.length))
-      ) {
-        event.preventDefault();
-        const task = tasks[currentTaskIndex];
-        if (task) {
-          const taskDurationMs =
-            Date.now() - (taskStartTime ?? Date.now()) - taskPausedTime;
-          const newCompletedTasks = [
-            ...completedTasks,
-            {
-              ...task,
-              duration: taskDurationMs,
-            },
-          ];
-          setCompletedTasks(newCompletedTasks);
-
-          if (currentTaskIndex === tasks.length - 1) {
-            setIsRunning(false);
-          } else {
-            setTaskStartTime(Date.now());
-            setTaskPausedTime(0);
-          }
-
-          setCurrentTaskIndex((prev) => prev + 1);
-        }
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyPress);
-    return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [
-    currentTaskIndex,
-    isRunning,
-    taskStartTime,
-    tasks,
-    completedTasks,
-    elapsedTime,
-    lastPauseTime,
-  ]);
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isRunning) {
-      setStartTime((prev) => prev ?? Date.now());
-      setTaskStartTime((prev) => prev ?? Date.now());
-
-      interval = setInterval(() => {
-        setElapsedTime(Date.now() - (startTime ?? Date.now()) - pausedTime);
-        setCurrentTaskTime(
-          Date.now() - (taskStartTime ?? Date.now()) - taskPausedTime,
-        );
-      }, 100);
-    }
-    return () => clearInterval(interval);
-  }, [isRunning, startTime, taskStartTime, pausedTime, taskPausedTime]);
-
-  const getTaskContent = (task: TaskData | CompletedTaskData) => {
-    return (
-      <>
-        <div>{task.title}</div>
-        {task.source === "linear" && "identifier" in task && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="ml-2 h-6 px-2 text-xs"
-            onClick={() => window.open(task.url, "_blank")}
-          >
-            {task.identifier}
-          </Button>
-        )}
-      </>
-    );
-  };
-
   const handleSave = useCallback(async () => {
     router.push("/");
     const promise = Promise.all(
@@ -171,6 +77,105 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
       error: "Failed to complete tasks",
     });
   }, [completedTasks, completeTodoistTask, completeLinearTask, router, utils]);
+
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.code === "Space") {
+        event.preventDefault();
+        if (isRunning) {
+          setLastPauseTime(Date.now());
+          setIsRunning(false);
+        } else {
+          if (lastPauseTime) {
+            const pauseDuration = Date.now() - lastPauseTime;
+            setPausedTime((prev) => prev + pauseDuration);
+            setTaskPausedTime((prev) => prev + pauseDuration);
+          }
+          setLastPauseTime(null);
+          setIsRunning(true);
+        }
+      } else if (
+        event.code === "Enter" &&
+        ((event.metaKey && currentTaskIndex >= tasks.length) ||
+          (!event.metaKey && currentTaskIndex < tasks.length))
+      ) {
+        event.preventDefault();
+        if (currentTaskIndex >= tasks.length) {
+          void handleSave();
+          return;
+        }
+
+        const task = tasks[currentTaskIndex];
+        if (task) {
+          const taskDurationMs =
+            Date.now() - (taskStartTime ?? Date.now()) - taskPausedTime;
+          const newCompletedTasks = [
+            ...completedTasks,
+            {
+              ...task,
+              duration: taskDurationMs,
+            },
+          ];
+          setCompletedTasks(newCompletedTasks);
+
+          if (currentTaskIndex === tasks.length - 1) {
+            setIsRunning(false);
+          } else {
+            setTaskStartTime(Date.now());
+            setTaskPausedTime(0);
+          }
+
+          setCurrentTaskIndex((prev) => prev + 1);
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [
+    currentTaskIndex,
+    isRunning,
+    taskStartTime,
+    tasks,
+    completedTasks,
+    elapsedTime,
+    lastPauseTime,
+    handleSave,
+  ]);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isRunning) {
+      setStartTime((prev) => prev ?? Date.now());
+      setTaskStartTime((prev) => prev ?? Date.now());
+
+      interval = setInterval(() => {
+        setElapsedTime(Date.now() - (startTime ?? Date.now()) - pausedTime);
+        setCurrentTaskTime(
+          Date.now() - (taskStartTime ?? Date.now()) - taskPausedTime,
+        );
+      }, 100);
+    }
+    return () => clearInterval(interval);
+  }, [isRunning, startTime, taskStartTime, pausedTime, taskPausedTime]);
+
+  const getTaskContent = (task: TaskData | CompletedTaskData) => {
+    return (
+      <>
+        <div>{task.title}</div>
+        {task.source === "linear" && "identifier" in task && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="ml-2 h-6 px-2 text-xs"
+            onClick={() => window.open(task.url, "_blank")}
+          >
+            {task.identifier}
+          </Button>
+        )}
+      </>
+    );
+  };
 
   if (currentTaskIndex >= tasks.length) {
     return (
