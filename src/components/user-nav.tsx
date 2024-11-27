@@ -29,6 +29,7 @@ export function UserNav({ user }: UserNavProps) {
     api.integrations.disconnectLinear.useMutation({
       onSuccess: () => {
         void utils.integrations.getConnectedProviders.invalidate();
+        void utils.integrations.getLinearTasks.invalidate();
       },
     });
 
