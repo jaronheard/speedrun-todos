@@ -86,7 +86,7 @@ function LinearTaskCard({ task }: { task: LinearTaskData }) {
               {task.state.name}
             </Badge>
           )}
-          {task.priority >= 0 && (
+          {task.priority && task.priority >= 0 && (
             <LinearPriorityBadge priority={task.priority} className="text-xs" />
           )}
           {task.estimate && (
@@ -112,20 +112,7 @@ function LinearTaskCard({ task }: { task: LinearTaskData }) {
 
         {task.description && (
           <div className="line-clamp-2 text-sm text-muted-foreground">
-            <ReactMarkdown
-              components={{
-                a: ({ node, ...props }) => (
-                  <a
-                    {...props}
-                    className="text-blue-500 hover:underline"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  />
-                ),
-              }}
-            >
-              {task.description}
-            </ReactMarkdown>
+            <ReactMarkdown>{task.description}</ReactMarkdown>
           </div>
         )}
         {task.dueDate && (
