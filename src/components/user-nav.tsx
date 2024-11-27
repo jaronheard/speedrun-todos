@@ -12,6 +12,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { signOut } from "next-auth/react";
 import { api } from "~/trpc/react";
+import { useTheme } from "next-themes";
 
 interface UserNavProps {
   user: {
@@ -23,6 +24,7 @@ interface UserNavProps {
 
 export function UserNav({ user }: UserNavProps) {
   const utils = api.useUtils();
+  const { setTheme } = useTheme();
   const { data: connectedProviders } =
     api.integrations.getConnectedProviders.useQuery();
   const { mutate: disconnectLinear } =
@@ -86,6 +88,16 @@ export function UserNav({ user }: UserNavProps) {
             Connect Linear
           </DropdownMenuItem>
         )}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => setTheme("light")}>
+          Light Mode
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("dark")}>
+          Dark Mode
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("system")}>
+          System Theme
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => signOut()}>Log out</DropdownMenuItem>
       </DropdownMenuContent>
