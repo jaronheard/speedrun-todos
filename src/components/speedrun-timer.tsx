@@ -141,6 +141,7 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
     elapsedTime,
     lastPauseTime,
     handleSave,
+    taskPausedTime,
   ]);
 
   useEffect(() => {

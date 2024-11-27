@@ -1,7 +1,7 @@
 import { auth } from "~/server/auth";
 import { redirect } from "next/navigation";
 import SpeedrunTimer from "~/components/speedrun-timer";
-import { type Task } from "@doist/todoist-api-typescript";
+import { type TaskData } from "~/types/task";
 
 export default async function SpeedrunPage({
   searchParams,
@@ -15,7 +15,7 @@ export default async function SpeedrunPage({
   }
 
   const tasks = searchParams.tasks
-    ? (JSON.parse(searchParams.tasks) as Task[])
+    ? (JSON.parse(searchParams.tasks) as TaskData[])
     : [];
 
   return (
