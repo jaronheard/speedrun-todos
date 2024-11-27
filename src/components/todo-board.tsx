@@ -110,75 +110,80 @@ export default function TodoBoard() {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-      <DragDropContext
-        onDragEnd={onDragEnd}
-        onDragUpdate={(update) => {
-          if (update.destination) {
-            // You can use these values to update positioning if needed
-          }
-        }}
-      >
-        <div className="space-y-4">
-          <h2 className="text-2xl font-bold">Available Tasks</h2>
+    <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+      <DragDropContext onDragEnd={onDragEnd}>
+        <div className="flex flex-col gap-4">
+          <h2 className="text-lg font-semibold">Available Tasks</h2>
           <Droppable droppableId="tasks">
             {(provided: DroppableProvided) => (
               <div
                 ref={provided.innerRef}
                 {...provided.droppableProps}
-                className="rounded-md border border-dashed p-4"
+                className="flex flex-col gap-3 rounded-lg border border-dashed p-4"
               >
-                {availableTasks.map((task, index) => (
-                  <Draggable key={task.id} draggableId={task.id} index={index}>
-                    {(provided: DraggableProvided) => (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                        style={provided.draggableProps.style}
-                      >
-                        <div className="py-2">
+                {availableTasks.length === 0 ? (
+                  <p className="py-8 text-center text-sm text-muted-foreground">
+                    No tasks available
+                  </p>
+                ) : (
+                  availableTasks.map((task, index) => (
+                    <Draggable
+                      key={task.id}
+                      draggableId={task.id}
+                      index={index}
+                    >
+                      {(provided: DraggableProvided) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          style={provided.draggableProps.style}
+                        >
                           <TodoCard task={task} />
                         </div>
-                      </div>
-                    )}
-                  </Draggable>
-                ))}
+                      )}
+                    </Draggable>
+                  ))
+                )}
                 {provided.placeholder}
               </div>
             )}
           </Droppable>
         </div>
 
-        <div className="space-y-4">
-          <h2 className="text-2xl font-bold">Speedrun Queue</h2>
+        <div className="flex flex-col gap-4">
+          <h2 className="text-lg font-semibold">Speedrun Queue</h2>
           <Droppable droppableId="selected">
             {(provided: DroppableProvided) => (
               <div
                 ref={provided.innerRef}
                 {...provided.droppableProps}
-                className="rounded-md border border-dashed p-4"
+                className="flex flex-1 flex-col gap-3 rounded-lg border border-dashed p-4"
               >
-                {selectedTasks.map((task, index) => (
-                  <Draggable
-                    key={task.id}
-                    draggableId={`selected-${task.id}`}
-                    index={index}
-                  >
-                    {(provided: DraggableProvided) => (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                        style={provided.draggableProps.style}
-                      >
-                        <div className="py-2">
+                {selectedTasks.length === 0 ? (
+                  <p className="py-8 text-center text-sm text-muted-foreground">
+                    Drag tasks here to create your speedrun
+                  </p>
+                ) : (
+                  selectedTasks.map((task, index) => (
+                    <Draggable
+                      key={task.id}
+                      draggableId={`selected-${task.id}`}
+                      index={index}
+                    >
+                      {(provided: DraggableProvided) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          style={provided.draggableProps.style}
+                        >
                           <TodoCard task={task} />
                         </div>
-                      </div>
-                    )}
-                  </Draggable>
-                ))}
+                      )}
+                    </Draggable>
+                  ))
+                )}
                 {provided.placeholder}
               </div>
             )}

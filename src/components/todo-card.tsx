@@ -14,61 +14,70 @@ function LinearTaskCard({ task }: { task: LinearTaskData }) {
   };
 
   return (
-    <Card className="h-[100px]">
-      <CardContent className="flex h-full items-start justify-between gap-4 p-4">
-        <div className="flex-1 overflow-hidden">
-          <div className="flex items-center justify-between gap-2">
-            <p className="truncate font-medium">
+    <Card className="min-h-[100px]">
+      <CardContent className="flex h-full flex-col gap-2 p-4">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1">
+            <p className="truncate font-medium leading-tight">
               {task.identifier}: {task.title}
             </p>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6 shrink-0"
-              onClick={openInLinear}
-              title="Open in Linear"
-            >
-              <ExternalLink className="h-4 w-4" />
-            </Button>
           </div>
-
-          <div className="mt-1 flex flex-wrap items-center gap-2">
-            {task.state && <Badge variant="secondary">{task.state.name}</Badge>}
-            {task.priority && (
-              <Badge variant={task.priority > 2 ? "destructive" : "secondary"}>
-                P{task.priority}
-              </Badge>
-            )}
-            {task.estimate && (
-              <Badge variant="outline">Size: {task.estimate}</Badge>
-            )}
-            {task.labels?.map((label) => (
-              <Badge
-                key={label.name}
-                variant="outline"
-                style={{
-                  backgroundColor: label.color
-                    ? `#${label.color}20`
-                    : undefined,
-                  color: label.color ? `#${label.color}` : undefined,
-                }}
-              >
-                {label.name}
-              </Badge>
-            ))}
-          </div>
-
-          {task.dueDate && (
-            <p className="mt-1 truncate text-sm text-muted-foreground">
-              Due {formatDistanceToNow(new Date(task.dueDate))}
-            </p>
-          )}
-          {task.description && (
-            <p className="line-clamp-2 text-sm text-muted-foreground">
-              {task.description}
-            </p>
-          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 shrink-0"
+            onClick={openInLinear}
+            title="Open in Linear"
+          >
+            <ExternalLink className="h-4 w-4" />
+          </Button>
         </div>
+
+        <div className="flex flex-wrap items-center gap-1.5">
+          {task.state && (
+            <Badge variant="secondary" className="text-xs">
+              {task.state.name}
+            </Badge>
+          )}
+          {/* {task.priority && (
+            <Badge
+              variant={task.priority > 2 ? "destructive" : "secondary"}
+              className="text-xs"
+            >
+              P{task.priority}
+            </Badge>
+          )} */}
+          {task.estimate && (
+            <Badge variant="outline" className="text-xs">
+              {task.estimate} pts
+            </Badge>
+          )}
+          {task.labels?.map((label) => (
+            <Badge
+              key={label.name}
+              variant="outline"
+              className="text-xs"
+              style={{
+                backgroundColor: label.color ? `#${label.color}15` : undefined,
+                borderColor: label.color ? `#${label.color}30` : undefined,
+                color: label.color ? `#${label.color}` : undefined,
+              }}
+            >
+              {label.name}
+            </Badge>
+          ))}
+        </div>
+
+        {task.description && (
+          <p className="line-clamp-2 text-sm text-muted-foreground">
+            {task.description}
+          </p>
+        )}
+        {task.dueDate && (
+          <p className="text-xs text-muted-foreground">
+            Due {formatDistanceToNow(new Date(task.dueDate))}
+          </p>
+        )}
       </CardContent>
     </Card>
   );
@@ -76,28 +85,31 @@ function LinearTaskCard({ task }: { task: LinearTaskData }) {
 
 function TodoistTaskCard({ task }: { task: TodoistTaskData }) {
   return (
-    <Card className="h-[100px]">
-      <CardContent className="flex h-full items-start justify-between gap-4 p-4">
-        <div className="flex-1 overflow-hidden">
-          <p className="truncate font-medium">{task.title}</p>
-          {task.dueDate && (
-            <p className="truncate text-sm text-muted-foreground">
-              Due {formatDistanceToNow(new Date(task.dueDate))}
-            </p>
-          )}
-          {task.description && (
-            <p className="line-clamp-2 text-sm text-muted-foreground">
-              {task.description}
-            </p>
+    <Card className="min-h-[100px]">
+      <CardContent className="flex h-full flex-col gap-2 p-4">
+        <div className="flex items-start justify-between gap-2">
+          <p className="flex-1 truncate font-medium leading-tight">
+            {task.title}
+          </p>
+          {task.priority > 1 && (
+            <Badge
+              className="shrink-0 text-xs"
+              variant={task.priority === 4 ? "destructive" : "secondary"}
+            >
+              P{task.priority}
+            </Badge>
           )}
         </div>
-        {task.priority > 1 && (
-          <Badge
-            className="shrink-0"
-            variant={task.priority === 4 ? "destructive" : "secondary"}
-          >
-            P{task.priority}
-          </Badge>
+
+        {task.description && (
+          <p className="line-clamp-2 text-sm text-muted-foreground">
+            {task.description}
+          </p>
+        )}
+        {task.dueDate && (
+          <p className="text-xs text-muted-foreground">
+            Due {formatDistanceToNow(new Date(task.dueDate))}
+          </p>
         )}
       </CardContent>
     </Card>
