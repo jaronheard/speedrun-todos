@@ -154,4 +154,21 @@ export const integrationsRouter = createTRPCRouter({
         throw new Error("Failed to complete Linear task");
       }
     }),
+
+  disconnectLinear: protectedProcedure.mutation(async ({ ctx }) => {
+    try {
+      await ctx.db.integration.delete({
+        where: {
+          provider_userId: {
+            provider: "linear",
+            userId: ctx.session.user.id,
+          },
+        },
+      });
+      return { success: true };
+    } catch (error) {
+      console.error("Error disconnecting Linear:", error);
+      throw new Error("Failed to disconnect Linear");
+    }
+  }),
 });

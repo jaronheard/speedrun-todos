@@ -11,7 +11,7 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { signOut } from "next-auth/react";
-import { ConnectLinear } from "./connect-linear";
+import { api } from "~/trpc/react";
 
 interface UserNavProps {
   user: {
@@ -22,6 +22,35 @@ interface UserNavProps {
 }
 
 export function UserNav({ user }: UserNavProps) {
+  const utils = api.useUtils();
+  const { data: connectedProviders } =
+    api.integrations.getConnectedProviders.useQuery();
+  const { mutate: disconnectLinear } =
+    api.integrations.disconnectLinear.useMutation({
+      onSuccess: () => {
+        void utils.integrations.getConnectedProviders.invalidate();
+      },
+    });
+
+  const handleConnectLinear = () => {
+    const state = crypto.randomUUID();
+    const url = new URL("https://linear.app/oauth/authorize");
+    url.searchParams.append(
+      "client_id",
+      process.env.NEXT_PUBLIC_LINEAR_CLIENT_ID!,
+    );
+    url.searchParams.append(
+      "redirect_uri",
+      process.env.NEXT_PUBLIC_LINEAR_REDIRECT_URI!,
+    );
+    url.searchParams.append("response_type", "code");
+    url.searchParams.append("state", state);
+    url.searchParams.append("scope", "read,write");
+    window.location.href = url.toString();
+  };
+
+  const isLinearConnected = connectedProviders?.includes("linear");
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -44,7 +73,18 @@ export function UserNav({ user }: UserNavProps) {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <ConnectLinear />
+        {isLinearConnected ? (
+          <DropdownMenuItem
+            className="text-destructive focus:text-destructive"
+            onClick={() => disconnectLinear()}
+          >
+            Disconnect Linear
+          </DropdownMenuItem>
+        ) : (
+          <DropdownMenuItem onClick={handleConnectLinear}>
+            Connect Linear
+          </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => signOut()}>Log out</DropdownMenuItem>
       </DropdownMenuContent>
