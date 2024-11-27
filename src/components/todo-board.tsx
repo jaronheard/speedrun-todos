@@ -156,7 +156,17 @@ export default function TodoBoard() {
         </div>
 
         <div className="flex flex-col gap-4">
-          <h2 className="text-lg font-semibold">Speedrun Queue</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Speedrun Queue</h2>
+            <Button
+              disabled={selectedTasks.length === 0}
+              onClick={() => {
+                router.push(`/speedrun?tasks=${JSON.stringify(selectedTasks)}`);
+              }}
+            >
+              Start
+            </Button>
+          </div>
           <Droppable droppableId="selected">
             {(provided: DroppableProvided) => (
               <div
@@ -192,16 +202,6 @@ export default function TodoBoard() {
               </div>
             )}
           </Droppable>
-
-          <Button
-            className="w-full"
-            disabled={selectedTasks.length === 0}
-            onClick={() => {
-              router.push(`/speedrun?tasks=${JSON.stringify(selectedTasks)}`);
-            }}
-          >
-            Start Speedrun
-          </Button>
         </div>
       </DragDropContext>
     </div>
