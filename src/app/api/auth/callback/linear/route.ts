@@ -1,6 +1,5 @@
-import { type NextRequest } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "~/server/auth";
-import { redirect } from "next/navigation";
 import { env } from "~/env";
 import { db } from "~/server/db";
 
@@ -14,7 +13,7 @@ export async function GET(req: NextRequest) {
 
   const session = await auth();
   if (!session?.user) {
-    return redirect("/api/auth/signin");
+    return NextResponse.redirect(new URL("/api/auth/signin", req.url));
   }
 
   try {
@@ -60,7 +59,7 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    return redirect("/");
+    return NextResponse.redirect(new URL("/", req.url));
   } catch (error) {
     console.error("Error connecting Linear account:", error);
     return new Response("Failed to connect Linear account", { status: 500 });
