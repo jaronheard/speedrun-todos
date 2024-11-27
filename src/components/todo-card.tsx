@@ -126,6 +126,11 @@ function LinearTaskCard({ task }: { task: LinearTaskData }) {
 }
 
 function TodoistTaskCard({ task }: { task: TodoistTaskData }) {
+  const openInTodoist = () => {
+    const baseUrl = `https://todoist.com/app/task/${task.id}`;
+    window.open(baseUrl, "_blank");
+  };
+
   return (
     <Card className="min-h-[100px]">
       <CardContent className="flex h-full flex-col gap-2 p-4">
@@ -133,14 +138,25 @@ function TodoistTaskCard({ task }: { task: TodoistTaskData }) {
           <p className="flex-1 truncate font-medium leading-tight">
             {task.title}
           </p>
-          {task.priority > 1 && (
-            <Badge
-              className="shrink-0 text-xs"
-              variant={task.priority === 4 ? "destructive" : "secondary"}
+          <div className="flex items-center gap-2">
+            {task.priority > 1 && (
+              <Badge
+                className="shrink-0 text-xs"
+                variant={task.priority === 4 ? "destructive" : "secondary"}
+              >
+                P{task.priority}
+              </Badge>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 shrink-0 gap-1.5 text-xs"
+              onClick={openInTodoist}
+              title="Open in Todoist"
             >
-              P{task.priority}
-            </Badge>
-          )}
+              <ExternalLink className="h-3 w-3" />
+            </Button>
+          </div>
         </div>
 
         {task.description && (

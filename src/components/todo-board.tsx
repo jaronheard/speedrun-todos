@@ -57,6 +57,17 @@ export default function TodoBoard() {
     setAvailableTasks([...todoistTasks, ...linearTasks]);
   }, [tasks, linearIssues]);
 
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.key === "Enter" && event.metaKey && selectedTasks.length > 0) {
+        router.push(`/speedrun?tasks=${JSON.stringify(selectedTasks)}`);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [router, selectedTasks]);
+
   const onDragEnd = (result: DropResult) => {
     if (!result.destination) return;
 
@@ -215,14 +226,23 @@ export default function TodoBoard() {
         <div className="flex flex-col gap-4">
           <div className="flex h-12 items-center justify-between">
             <h2 className="text-lg font-semibold">Speedrun Queue</h2>
-            <Button
-              disabled={selectedTasks.length === 0}
-              onClick={() => {
-                router.push(`/speedrun?tasks=${JSON.stringify(selectedTasks)}`);
-              }}
-            >
-              Start
-            </Button>
+            <div className="flex items-center gap-2">
+              <div className="hidden text-sm text-muted-foreground md:block">
+                <kbd className="rounded border px-2 py-1">⌘</kbd>
+                <span className="mx-1">+</span>
+                <kbd className="rounded border px-2 py-1">Enter</kbd>
+              </div>
+              <Button
+                disabled={selectedTasks.length === 0}
+                onClick={() => {
+                  router.push(
+                    `/speedrun?tasks=${JSON.stringify(selectedTasks)}`,
+                  );
+                }}
+              >
+                Start
+              </Button>
+            </div>
           </div>
           <Droppable droppableId="selected">
             {(provided: DroppableProvided) => (
