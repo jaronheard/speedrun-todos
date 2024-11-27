@@ -3,10 +3,14 @@ import { redirect } from "next/navigation";
 import SpeedrunTimer from "~/components/speedrun-timer";
 import { type TaskData } from "~/types/task";
 
+interface SearchParams {
+  tasks?: string;
+}
+
 export default async function SpeedrunPage({
   searchParams,
 }: {
-  searchParams: { tasks?: string };
+  searchParams: SearchParams;
 }) {
   const session = await auth();
 
