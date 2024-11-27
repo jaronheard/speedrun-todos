@@ -17,11 +17,21 @@ import { type TaskData, mapTodoistTask, mapLinearIssue } from "~/types/task";
 import { Loader2 } from "lucide-react";
 import { type Task } from "@doist/todoist-api-typescript";
 import { type Issue } from "@linear/sdk";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
+import { ArrowUpDown } from "lucide-react";
+
+type SortOption = "priority" | "dueDate" | "source" | "none";
 
 export default function TodoBoard() {
   const router = useRouter();
   const [selectedTasks, setSelectedTasks] = useState<TaskData[]>([]);
   const [availableTasks, setAvailableTasks] = useState<TaskData[]>([]);
+  const [sortOption, setSortOption] = useState<SortOption>("none");
 
   const { data: account, isLoading: isLoadingAccount } =
     api.todoist.getAccount.useQuery();
@@ -97,6 +107,29 @@ export default function TodoBoard() {
     }
   };
 
+  const getSortedTasks = (tasks: TaskData[]) => {
+    const tasksCopy = [...tasks];
+
+    switch (sortOption) {
+      case "priority":
+        return tasksCopy.sort((a, b) => {
+          const priorityA = "priority" in a ? (a.priority ?? 0) : 0;
+          const priorityB = "priority" in b ? (b.priority ?? 0) : 0;
+          return priorityB - priorityA; // Higher priority first
+        });
+      case "dueDate":
+        return tasksCopy.sort((a, b) => {
+          if (!a.dueDate) return 1;
+          if (!b.dueDate) return -1;
+          return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+        });
+      case "source":
+        return tasksCopy.sort((a, b) => a.source.localeCompare(b.source));
+      default:
+        return tasksCopy;
+    }
+  };
+
   if (isLoadingAccount || isLoadingTasks) {
     return (
       <div className="flex h-[50vh] items-center justify-center">
@@ -117,7 +150,31 @@ export default function TodoBoard() {
     <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="flex flex-col gap-4">
-          <h2 className="text-lg font-semibold">Available Tasks</h2>
+          <div className="flex h-12 items-center justify-between">
+            <h2 className="text-lg font-semibold">Available Tasks</h2>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <ArrowUpDown className="mr-2 h-4 w-4" />
+                  Sort
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setSortOption("none")}>
+                  Default
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortOption("priority")}>
+                  By Priority
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortOption("dueDate")}>
+                  By Due Date
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortOption("source")}>
+                  By Source
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
           <Droppable droppableId="tasks">
             {(provided: DroppableProvided) => (
               <div
@@ -130,7 +187,7 @@ export default function TodoBoard() {
                     No tasks available
                   </p>
                 ) : (
-                  availableTasks.map((task, index) => (
+                  getSortedTasks(availableTasks).map((task, index) => (
                     <Draggable
                       key={task.id}
                       draggableId={task.id}
@@ -156,7 +213,7 @@ export default function TodoBoard() {
         </div>
 
         <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between">
+          <div className="flex h-12 items-center justify-between">
             <h2 className="text-lg font-semibold">Speedrun Queue</h2>
             <Button
               disabled={selectedTasks.length === 0}
