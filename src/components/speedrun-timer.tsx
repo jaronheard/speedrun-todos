@@ -101,9 +101,21 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
   }, [isRunning, startTime, taskStartTime]);
 
   const getTaskContent = (task: TaskData | CompletedTaskData) => {
-    return task.source === "linear" && "identifier" in task
-      ? `${task.identifier}: ${task.title}`
-      : task.title;
+    return (
+      <>
+        {task.title}{" "}
+        {task.source === "linear" && "identifier" in task && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="ml-2 h-6 px-2 text-xs"
+            onClick={() => window.open(task.url, "_blank")}
+          >
+            {task.identifier}
+          </Button>
+        )}
+      </>
+    );
   };
 
   const handleSave = useCallback(async () => {
@@ -153,9 +165,20 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
           </p>
           <ul className="space-y-2">
             {completedTasks.map((task) => (
-              <li key={task.id}>
-                ✅ {getTaskContent(task)} -{" "}
-                <span className="font-mono">{formatTime(task.duration)}</span>
+              <li key={task.id} className="flex items-center gap-2">
+                ✅{" "}
+                <span className="font-mono">{formatTime(task.duration)}</span> -{" "}
+                <span className="line-through">{task.title}</span>{" "}
+                {task.source === "linear" && "identifier" in task && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="ml-2 h-6 px-2 text-xs"
+                    onClick={() => window.open(task.url, "_blank")}
+                  >
+                    {task.identifier}
+                  </Button>
+                )}
               </li>
             ))}
           </ul>
@@ -176,23 +199,39 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
         </div>
         <div className="space-y-2">
           {completedTasks.map((task) => (
-            <div key={task.id} className="text-muted-foreground line-through">
-              {getTaskContent(task)} -{" "}
-              <span className="font-mono">{formatTime(task.duration)}</span>
+            <div
+              key={task.id}
+              className="flex items-center gap-2 text-muted-foreground"
+            >
+              <span className="font-mono">{formatTime(task.duration)}</span> -{" "}
+              <span className="line-through">{task.title}</span>{" "}
+              {task.source === "linear" && "identifier" in task && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="ml-2 h-6 px-2 text-xs"
+                  onClick={() => window.open(task.url, "_blank")}
+                >
+                  {task.identifier}
+                </Button>
+              )}
             </div>
           ))}
-          <div className="text-xl font-bold">
+          <div className="flex items-center text-xl font-bold">
             {getTaskContent(tasks[currentTaskIndex]!)}
           </div>
           {tasks.slice(currentTaskIndex + 1).map((task) => (
-            <div key={task.id} className="text-muted-foreground">
+            <div
+              key={task.id}
+              className="flex items-center text-muted-foreground"
+            >
               {getTaskContent(task)}
             </div>
           ))}
         </div>
         <div className="border-t pt-4 text-center">
           <div className="text-sm text-muted-foreground">Total Time</div>
-          <div className="font-mono text-xl font-bold">
+          <div className="font-mono text-xl font-bold text-muted-foreground">
             {formatTime(elapsedTime)}
           </div>
         </div>
