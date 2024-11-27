@@ -50,7 +50,12 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
           setStartTime(Date.now() - elapsedTime);
         }
         setIsRunning((prev) => !prev);
-      } else if (event.code === "Enter" && isRunning) {
+      } else if (
+        event.code === "Enter" &&
+        isRunning &&
+        ((event.metaKey && currentTaskIndex >= tasks.length) ||
+          (!event.metaKey && currentTaskIndex < tasks.length))
+      ) {
         event.preventDefault();
         const task = tasks[currentTaskIndex];
         if (task) {
@@ -156,98 +161,130 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
 
   if (currentTaskIndex >= tasks.length) {
     return (
-      <Card className="w-[600px] p-6">
-        <h2 className="mb-4 text-2xl font-bold">Summary</h2>
-        <div className="space-y-4">
-          <p>
-            Total time:{" "}
-            <span className="font-mono">{formatTime(elapsedTime)}</span>
-          </p>
-          <ul className="space-y-2">
-            {completedTasks.map((task) => (
-              <li
-                key={task.id}
-                className="flex items-center justify-between gap-4"
-              >
-                <div className="flex flex-grow-0 items-center gap-2 overflow-hidden">
-                  <span className="shrink-0">✅</span>
-                  <span className="shrink-0 font-mono">
-                    {formatTime(task.duration)}
-                  </span>
-                  <span className="shrink-0">-</span>
-                  <span className="overflow-hidden text-ellipsis whitespace-nowrap">
-                    {task.title}
-                  </span>
-                </div>
-                {task.source === "linear" && "identifier" in task && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-6 shrink-0 px-2 text-xs"
-                    onClick={() => window.open(task.url, "_blank")}
+      <div className="relative min-h-screen">
+        <div className="flex min-h-screen items-center justify-center pb-16">
+          <Card className="w-[600px] p-6">
+            <h2 className="mb-4 text-2xl font-bold">Summary</h2>
+            <div className="space-y-4">
+              <p>
+                Total time:{" "}
+                <span className="font-mono">{formatTime(elapsedTime)}</span>
+              </p>
+              <ul className="space-y-2">
+                {completedTasks.map((task) => (
+                  <li
+                    key={task.id}
+                    className="flex items-center justify-between gap-4"
                   >
-                    {task.identifier}
-                  </Button>
-                )}
-              </li>
-            ))}
-          </ul>
-          <Button onClick={handleSave}>Save & Return</Button>
+                    <div className="flex flex-grow-0 items-center gap-2 overflow-hidden">
+                      <span className="shrink-0">✅</span>
+                      <span className="shrink-0 font-mono">
+                        {formatTime(task.duration)}
+                      </span>
+                      <span className="shrink-0">-</span>
+                      <span className="overflow-hidden text-ellipsis whitespace-nowrap">
+                        {task.title}
+                      </span>
+                    </div>
+                    {task.source === "linear" && "identifier" in task && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-6 shrink-0 px-2 text-xs"
+                        onClick={() => window.open(task.url, "_blank")}
+                      >
+                        {task.identifier}
+                      </Button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              <Button onClick={handleSave}>Save & Return</Button>
+            </div>
+          </Card>
         </div>
-      </Card>
+
+        <div className="fixed bottom-0 left-0 right-0 border-t bg-background/80 backdrop-blur-sm">
+          <div className="mx-auto flex h-16 max-w-[600px] items-center justify-center gap-2 text-sm text-muted-foreground">
+            <kbd className="rounded border px-2 py-1">⌘</kbd>
+            <span>+</span>
+            <kbd className="rounded border px-2 py-1">Enter</kbd>
+            <span>to complete tasks</span>
+          </div>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card className="w-[600px] p-6">
-      <div className="space-y-4">
-        <div className="text-center">
-          <div className="text-sm text-muted-foreground">Current Task</div>
-          <div className="font-mono text-4xl font-bold">
-            {formatTime(currentTaskTime)}
-          </div>
-        </div>
-        <div className="space-y-2">
-          {completedTasks.map((task) => (
-            <div
-              key={task.id}
-              className="flex items-center justify-between gap-2"
-            >
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <span className="font-mono">{formatTime(task.duration)}</span> -{" "}
-                <span className="line-through">{task.title}</span>
+    <div className="relative min-h-screen">
+      <div className="flex min-h-screen items-center justify-center pb-16">
+        <Card className="w-[600px] p-6">
+          <div className="space-y-4">
+            <div className="text-center">
+              <div className="text-sm text-muted-foreground">Current Task</div>
+              <div className="font-mono text-4xl font-bold">
+                {formatTime(currentTaskTime)}
               </div>
-              {task.source === "linear" && "identifier" in task && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="ml-2 h-6 px-2 text-xs"
-                  onClick={() => window.open(task.url, "_blank")}
+            </div>
+            <div className="space-y-2">
+              {completedTasks.map((task) => (
+                <div
+                  key={task.id}
+                  className="flex items-center justify-between gap-2"
                 >
-                  {task.identifier}
-                </Button>
-              )}
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <span className="font-mono">
+                      {formatTime(task.duration)}
+                    </span>{" "}
+                    - <span className="line-through">{task.title}</span>
+                  </div>
+                  {task.source === "linear" && "identifier" in task && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="ml-2 h-6 px-2 text-xs"
+                      onClick={() => window.open(task.url, "_blank")}
+                    >
+                      {task.identifier}
+                    </Button>
+                  )}
+                </div>
+              ))}
+              <div className="flex items-center justify-between text-xl font-bold">
+                {getTaskContent(tasks[currentTaskIndex]!)}
+              </div>
+              {tasks.slice(currentTaskIndex + 1).map((task) => (
+                <div
+                  key={task.id}
+                  className="flex items-center justify-between text-muted-foreground"
+                >
+                  {getTaskContent(task)}
+                </div>
+              ))}
             </div>
-          ))}
-          <div className="flex items-center justify-between text-xl font-bold">
-            {getTaskContent(tasks[currentTaskIndex]!)}
+            <div className="border-t pt-4 text-center">
+              <div className="text-sm text-muted-foreground">Total Time</div>
+              <div className="font-mono text-xl font-bold text-muted-foreground">
+                {formatTime(elapsedTime)}
+              </div>
+            </div>
           </div>
-          {tasks.slice(currentTaskIndex + 1).map((task) => (
-            <div
-              key={task.id}
-              className="flex items-center justify-between text-muted-foreground"
-            >
-              {getTaskContent(task)}
-            </div>
-          ))}
-        </div>
-        <div className="border-t pt-4 text-center">
-          <div className="text-sm text-muted-foreground">Total Time</div>
-          <div className="font-mono text-xl font-bold text-muted-foreground">
-            {formatTime(elapsedTime)}
+        </Card>
+      </div>
+
+      <div className="fixed bottom-0 left-0 right-0 border-t bg-background/80 backdrop-blur-sm">
+        <div className="mx-auto flex h-16 max-w-[600px] items-center justify-center gap-8 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <kbd className="rounded border px-2 py-1">Space</kbd>
+            <span>to {isRunning ? "pause" : "start"}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <kbd className="rounded border px-2 py-1">Enter</kbd>
+            <span>to complete task</span>
           </div>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }
