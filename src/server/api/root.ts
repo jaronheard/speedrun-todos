@@ -1,4 +1,5 @@
 import { todoistRouter } from "~/server/api/routers/todoist";
+import { integrationsRouter } from "~/server/api/routers/integrations";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 
 /**
@@ -8,6 +9,7 @@ import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
  */
 export const appRouter = createTRPCRouter({
   todoist: todoistRouter,
+  integrations: integrationsRouter,
 });
 
 // export type definition of API

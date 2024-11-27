@@ -6,14 +6,21 @@ import { Button } from "~/components/ui/button";
 import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
 import { type Task } from "@doist/todoist-api-typescript";
+import { type Issue } from "@linear/sdk";
 import { toast } from "sonner";
 
+type CombinedTask = Task | Issue;
+
 interface SpeedrunTimerProps {
-  tasks: Task[];
+  tasks: CombinedTask[];
 }
 
-interface CompletedTask extends Task {
+interface CompletedTask extends CombinedTask {
   duration: number;
+}
+
+function isLinearTask(task: CombinedTask): task is Issue {
+  return "identifier" in task;
 }
 
 export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
@@ -101,17 +108,27 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
     return () => clearInterval(interval);
   }, [isRunning, startTime]);
 
+  const getTaskContent = (task: CombinedTask) => {
+    return isLinearTask(task)
+      ? `${task.identifier}: ${task.title}`
+      : task.content;
+  };
+
   const handleSave = useCallback(async () => {
     router.push("/");
     const promise = Promise.all(
-      completedTasks.map((task) =>
-        completeTodoistTask.mutateAsync({
+      completedTasks.map((task) => {
+        if (isLinearTask(task)) {
+          // Handle Linear task completion (if you have a mutation for it)
+          return Promise.resolve();
+        }
+        return completeTodoistTask.mutateAsync({
           key: tempKey,
           id: task.id,
           content: `⏱️${formatTime(task.duration)} - ${task.content}`,
           labels: ["speedrun", ...(task.labels ?? [])],
-        }),
-      ),
+        });
+      }),
     ).then(async () => {
       await utils.todoist.getTasks.invalidate();
     });
@@ -135,7 +152,7 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
           <ul className="space-y-2">
             {completedTasks.map((task) => (
               <li key={task.id}>
-                ✅ {task.content} -{" "}
+                ✅ {getTaskContent(task)} -{" "}
                 <span className="font-mono">{formatTime(task.duration)}</span>
               </li>
             ))}
@@ -155,16 +172,16 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
         <div className="space-y-2">
           {completedTasks.map((task) => (
             <div key={task.id} className="text-muted-foreground line-through">
-              {task.content} -{" "}
+              {getTaskContent(task)} -{" "}
               <span className="font-mono">{formatTime(task.duration)}</span>
             </div>
           ))}
           <div className="text-xl font-bold">
-            {tasks[currentTaskIndex]?.content}
+            {getTaskContent(tasks[currentTaskIndex])}
           </div>
           {tasks.slice(currentTaskIndex + 1).map((task) => (
             <div key={task.id} className="text-muted-foreground">
-              {task.content}
+              {getTaskContent(task)}
             </div>
           ))}
         </div>
