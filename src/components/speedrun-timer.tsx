@@ -22,6 +22,8 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
   const [pausedTime, setPausedTime] = useState(0);
   const [taskStartTime, setTaskStartTime] = useState<number | null>(null);
   const [currentTaskTime, setCurrentTaskTime] = useState(0);
+  const [lastPauseTime, setLastPauseTime] = useState<number | null>(null);
+  const [taskPausedTime, setTaskPausedTime] = useState(0);
 
   const utils = api.useUtils();
   const completeTodoistTask = api.todoist.completeTask.useMutation();
@@ -45,11 +47,17 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
       if (event.code === "Space") {
         event.preventDefault();
         if (isRunning) {
-          setPausedTime(elapsedTime);
+          setLastPauseTime(Date.now());
+          setIsRunning(false);
         } else {
-          setStartTime(Date.now() - elapsedTime);
+          if (lastPauseTime) {
+            const pauseDuration = Date.now() - lastPauseTime;
+            setPausedTime((prev) => prev + pauseDuration);
+            setTaskPausedTime((prev) => prev + pauseDuration);
+          }
+          setLastPauseTime(null);
+          setIsRunning(true);
         }
-        setIsRunning((prev) => !prev);
       } else if (
         event.code === "Enter" &&
         isRunning &&
@@ -59,7 +67,8 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
         event.preventDefault();
         const task = tasks[currentTaskIndex];
         if (task) {
-          const taskDurationMs = Date.now() - (taskStartTime ?? Date.now());
+          const taskDurationMs =
+            Date.now() - (taskStartTime ?? Date.now()) - taskPausedTime;
           const newCompletedTasks = [
             ...completedTasks,
             {
@@ -73,6 +82,7 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
             setIsRunning(false);
           } else {
             setTaskStartTime(Date.now());
+            setTaskPausedTime(0);
           }
 
           setCurrentTaskIndex((prev) => prev + 1);
@@ -89,6 +99,7 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
     tasks,
     completedTasks,
     elapsedTime,
+    lastPauseTime,
   ]);
 
   useEffect(() => {
@@ -98,12 +109,14 @@ export default function SpeedrunTimer({ tasks }: SpeedrunTimerProps) {
       setTaskStartTime((prev) => prev ?? Date.now());
 
       interval = setInterval(() => {
-        setElapsedTime(Date.now() - (startTime ?? Date.now()));
-        setCurrentTaskTime(Date.now() - (taskStartTime ?? Date.now()));
+        setElapsedTime(Date.now() - (startTime ?? Date.now()) - pausedTime);
+        setCurrentTaskTime(
+          Date.now() - (taskStartTime ?? Date.now()) - taskPausedTime,
+        );
       }, 100);
     }
     return () => clearInterval(interval);
-  }, [isRunning, startTime, taskStartTime]);
+  }, [isRunning, startTime, taskStartTime, pausedTime, taskPausedTime]);
 
   const getTaskContent = (task: TaskData | CompletedTaskData) => {
     return (
